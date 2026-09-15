@@ -9,7 +9,8 @@ Aynı sınıf hem odaklı temsilde hem tam görüntüde (orijinal çözünürlü
 şifreleme model çıktısını değiştirmediği için tam görüntü satırı Π_ROI'nin doğruluğudur. Temsiller: tam görüntü (orijinal
 U512/U256 ve 224 px), eş örnekli küçültmeler (U), odaklı yapılandırmalar, yalnız odak, bilgisiz girdi (sabit; C'de yok).
 Bölmeler: beyinde test katı k, doğrulama katı k+1 (hasta bazlı), eğitim kalan üç kat; COVID-QU-Ex'te resmi
-Train / Val / Test.
+Train / Val / Test. Beyinde AUC havuzlanmış kat dışı tahminlerden; kat ortalaması `auc_kat_ort` ayrıca (havuzlanmış AUC
+bilgisiz girdide 0.47–0.48'e sapabilir, kat ortalaması 0.500).
 
 Adil ayar (tam görüntü dahil her temsil kendi en iyi ayarını alır): AdamW, doğrulama kaybıyla erken durdurma (en çok
 MAX_EPOCHS, sabır PATIENCE). Ağırlık azaltma WD_GRID içinden doğrulama kaybıyla seçilir; en iyi değer üst sınırdaysa
@@ -40,12 +41,14 @@ import torch.nn.functional as F
 import config
 from common.evaluation import auc_score, bootstrap_ci
 from common.report import write_markdown_table
-from foveahe.data import Dataset, load_dataset, load_layers
+from experiments.fovea_info import fold_mean_auc
+from foveahe.data import DISPLAY, Dataset, load_dataset, load_layers
 from foveahe.he_cnn import ModelC, export_c, forward_numpy_c, intermediate_max, layer_plan
 from foveahe.he_models import STD_MIN, export, forward_numpy, make_model, save_weights
 from foveahe.representation import FoveaSpec
 
 LOG = config.LOGS / "fovea_models.log"
+PREDS = config.RESULTS / "preds"
 ORIGINAL = {"brain": 512, "covidqu": 256}
 MAX_LOSS = 0.03
 LR = 1e-3
@@ -255,6 +258,20 @@ def splits(ds: Dataset, quick: bool):
     return [("test", tr, va, te)]
 
 
+def fill_fold_auc(df: pd.DataFrame, tag: str) -> pd.DataFrame:
+    """Kat ortalaması AUC'si eksik beyin satırlarını kayıtlı tahminlerden tamamlar."""
+    if "auc_kat_ort" not in df:
+        df["auc_kat_ort"] = np.nan
+    need = (df.veri == DISPLAY["brain"]) & df.auc_kat_ort.isna()
+    if need.any():
+        ds = load_dataset("brain")
+        for i in df.index[need]:
+            path = PREDS / f"fovea_model_brain_{df.at[i, 'model']}_{df.at[i, 'temsil']}_s{int(df.at[i, 'tohum'])}{tag}.npy"
+            if path.exists():
+                df.at[i, "auc_kat_ort"] = fold_mean_auc(ds, np.load(path))
+    return df
+
+
 def summarize(df: pd.DataFrame) -> pd.DataFrame:
     """Veri × model × temsil başına tohum ortalaması; fark aynı model sınıfının tam görüntü (orijinal) satırına göre."""
     rows = []
@@ -264,9 +281,11 @@ def summarize(df: pd.DataFrame) -> pd.DataFrame:
             seeds = set(g.tohum)
             r = ref[ref.tohum.isin(seeds)]
             loss = float(r.auc.mean() - g.auc.mean()) if len(r) else np.nan
+            fold = g.auc_kat_ort if "auc_kat_ort" in g else pd.Series(dtype=float)
             rows.append({"veri": veri, "model": model, "temsil": name, "temsil_turu": g.temsil_turu.iloc[0],
                          "sifreli_deger": int(g.sifreli_deger.iloc[0]), "tohum_sayisi": len(seeds),
                          "auc_ort": float(g.auc.mean()), "auc_std": float(g.auc.std(ddof=1)) if len(g) > 1 else np.nan,
+                         "auc_kat_ort": float(fold.mean()) if fold.notna().any() else np.nan,
                          "tam_fark": loss, "wd_secilen": g.wd_secilen.iloc[0],
                          "lr_secilen": g.lr_secilen.iloc[0] if "lr_secilen" in g else "",
                          "epoch_ort": float(g.epoch_ort.mean()), "sinirda": g.sinirda.iloc[0] if "sinirda" in g else "",
@@ -279,7 +298,7 @@ def read_table(path) -> pd.DataFrame:
     return pd.read_csv(path, keep_default_na=False, na_values=[""])
 
 
-def save_row(row: dict, out_csv):
+def save_row(row: dict, out_csv, tag: str):
     if out_csv.exists():
         df = read_table(out_csv)
         same = ((df.veri == row["veri"]) & (df.model == row["model"]) & (df.temsil == row["temsil"])
@@ -287,6 +306,7 @@ def save_row(row: dict, out_csv):
         df = pd.concat([df[~same], pd.DataFrame([row])], ignore_index=True)
     else:
         df = pd.DataFrame([row])
+    df = fill_fold_auc(df, tag)
     df.to_csv(out_csv, index=False)
     write_markdown_table(summarize(df), out_csv.with_suffix(".md"), floatfmt="{:.4f}")
 
@@ -339,13 +359,14 @@ def run_dataset(name, models, configs, seeds, device, quick, out_csv, tag):
                    "sifreli_deger": n_values, "tohum": seed, "auc": auc, "ci95_alt": lo, "ci95_ust": hi,
                    "n": len(te_all), "epoch_ort": float(np.mean(epochs)), "wd_secilen": "/".join(f"{w:g}" for w in wds),
                    "lr_secilen": "/".join(f"{v:g}" for v in lrs), "sinirda": ",".join(edge),
-                   "aktarim_hatasi": export_err, "en_buyuk_ara_deger": max_mid, "sure_s": time.perf_counter() - t0}
-            np.save(config.RESULTS / "preds" / f"fovea_model_{name}_{kind}_{cfg}_s{seed}{tag}.npy", probs)
-            save_row(row, out_csv)
+                   "aktarim_hatasi": export_err, "en_buyuk_ara_deger": max_mid, "sure_s": time.perf_counter() - t0,
+                   "auc_kat_ort": fold_mean_auc(ds, probs) if name == "brain" else np.nan}
+            np.save(PREDS / f"fovea_model_{name}_{kind}_{cfg}_s{seed}{tag}.npy", probs)
+            save_row(row, out_csv, tag)
             log(f"[{name}{tag}] {kind:2s} {cfg:14s} tohum={seed} değer={n_values} AUC={auc:.4f} "
-                f"(%95 GA {lo:.4f}-{hi:.4f}) epoch={row['epoch_ort']:.1f} wd={row['wd_secilen']} lr={row['lr_secilen']} "
-                f"sınırda={row['sinirda'] or '-'} aktarım hatası={export_err:.1e} en büyük ara değer={max_mid:.1f} "
-                f"{row['sure_s']:.0f} s")
+                f"(%95 GA {lo:.4f}-{hi:.4f}) kat ort={row['auc_kat_ort']:.4f} epoch={row['epoch_ort']:.1f} "
+                f"wd={row['wd_secilen']} lr={row['lr_secilen']} sınırda={row['sinirda'] or '-'} "
+                f"aktarım hatası={export_err:.1e} en büyük ara değer={max_mid:.1f} {row['sure_s']:.0f} s")
         del data
         if device != "cpu":
             torch.cuda.empty_cache()
@@ -368,7 +389,7 @@ def main():
         run_dataset(name, args.models, args.configs or default_configs(name), args.seeds, args.device, args.quick,
                     out_csv, tag)
     if out_csv.exists():
-        print(summarize(read_table(out_csv)).round(4).to_string(index=False))
+        print(summarize(fill_fold_auc(read_table(out_csv), tag)).round(4).to_string(index=False))
 
 
 if __name__ == "__main__":
