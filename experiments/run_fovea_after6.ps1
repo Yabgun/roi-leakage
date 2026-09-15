@@ -34,7 +34,9 @@ while (-not (Select-String -Path $log -Pattern '\] KUYRUK6 TAMAMLANDI\s*$' -Quie
 Note "KUYRUK7 BASLADI"
 
 # 1) Adim 1: 5 tohum
-[void](Run "experiments.fovea_info" @("--dataset", "brain", "--configs", "tam", "tam_pencere", "F32_G16", "F64_G32", "U32", "U64", "U64_pencere", "--seeds", "1", "2", "3", "4") "fovea_info_tohum_beyin" "KUYRUK7 adim 1: beyin tohum 1-4")
+# Beyinde ROI bilgisi kazancin buyuk kismini acikliyor (tam_pencere 0.9921 / tam 0.9825); odaklamanin kendi katkisini
+# ayirmak icin es butceli es ornekli + ROI penceresi referanslari da 5 tohum. Tohum 0 olan satirlar atlanir.
+[void](Run "experiments.fovea_info" @("--dataset", "brain", "--configs", "tam", "tam_pencere", "F32_G16", "F64_G32", "U32", "U32_pencere", "U64", "U64_pencere", "U90", "U90_pencere", "--seeds", "0", "1", "2", "3", "4") "fovea_info_tohum_beyin" "KUYRUK7 adim 1: beyin tohum 0-4")
 [void](Run "experiments.fovea_info" @("--dataset", "covidqu", "--configs", "tam", "F32_G16", "F64_G32", "U32", "U64", "--seeds", "1", "2", "3", "4") "fovea_info_tohum_cxr" "KUYRUK7 adim 1: covidqu tohum 1-4")
 [void](Run "experiments.fovea_info" @("--plot-only") "fovea_info_sekil_tohum" "KUYRUK7 adim 1: sekil")
 
