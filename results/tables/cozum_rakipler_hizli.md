@@ -1,0 +1,4 @@
+| veri | yontem | model | tohum | auc | ci95_alt | ci95_ust | n | sifreli_deger | wd_lr | aktarim_hatasi | istemci_on_isleme_s | istemci_on_isleme_tek_cekirdek_s | egitim_s | maks_mutlak_logit_hatasi | argmax_uyumu | auc_farki_eslesme | ciphertext | sifreleme_s | sunucu_s | cozme_s | toplam_s | yukleme_MB | indirme_MB | uctan_uca_s |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| beyin MR (Cheng) | şifreli özet (ImageNet ResNet-18, 512) | D | 0 | 0.9775 | 0.9594 | 0.9888 | 542 | 512 | 1@0.001 | 0.0000 | 0.0260 | 0.0750 | 2.7041 | 0.0000 | 1.0000 | 0.0000 | 1 | 0.0109 | 1.3229 | 0.0063 | 1.3400 | 0.8559 | 1.3795 | 1.3660 |
+| beyin MR (Cheng) | şifreli özet (ImageNet ResNet-18, 512) | D2 | 0 | 0.9438 | 0.9199 | 0.9644 | 542 | 512 | 0.0001@0.001 | 0.0000 | 0.0260 | 0.0750 | 2.5005 | 0.0001 | 1.0000 | 0.0000 | 1 | 0.0143 | 1.4429 | 0.0022 | 1.4594 | 0.8551 | 0.7869 | 1.4854 |

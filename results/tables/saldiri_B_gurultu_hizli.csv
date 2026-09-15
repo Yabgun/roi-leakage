@@ -1,0 +1,5 @@
+veri,bozulma,duzey,gorus,aciklama,tohum,auc,ci95_alt,ci95_ust,n,epoch,sure_s
+beyin MR (Cheng),gauss,0.05,baglam,"saldırgan: ROI gizli, bağlam bozuk",0,0.9868784003473924,0.9721157022661382,0.9962621176093324,542,1,39.23481069994159
+beyin MR (Cheng),gauss,0.05,tam,"fayda: ROI temiz, bağlam bozuk",0,0.9935269586452736,0.9838461130061522,0.9992433183406432,542,1,12.138869300018996
+beyin MR (Cheng),bulanik,2.0,baglam,"saldırgan: ROI gizli, bağlam bozuk",0,0.9927902391341256,0.98367206138394,0.9979471335330088,542,1,15.132761199958622
+beyin MR (Cheng),bulanik,2.0,tam,"fayda: ROI temiz, bağlam bozuk",0,0.9956894419852859,0.9893104734289535,0.9991958053999053,542,1,13.09342180006206

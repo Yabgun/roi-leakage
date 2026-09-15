@@ -42,10 +42,12 @@ Tüm deneyler proje kökünden çalıştırılır: `.venv\Scripts\python -m expe
 | 6c | Gerçekçilik testi (başka kaynaktan saldırgan) | `python -m experiments.attack_context_transfer` | `results/tables/saldiri_B_transfer.csv` |
 | 7 | Kök neden (Grad-CAM, önişleme) | `python -m experiments.root_cause` | `results/tables/kok_neden_*.csv`, `results/figures/kok_neden_gradcam_*.png` |
 | 8 | Savunma ve gerçek bedel | `python -m experiments.defense_expansion` | `results/tables/savunma*.csv`, `results/figures/savunma_*.png` |
-| Ç0 | FoveaHE temsil öz sınaması | `python -m foveahe.representation` | (konsol) |
+| Ç0 | FoveaHE temsil ve Model C öz sınamaları | `python -m foveahe.representation`, `python -m foveahe.he_cnn` | (konsol) |
 | Ç1 | Çözüm Adım 1: odaklı temsil teşhis bilgisini koruyor mu (ResNet-18 üst sınır; tam, eş örnekli ve ROI penceresi referansları) | `python -m experiments.fovea_info` (kuyruk: `experiments\run_fovea_step1.ps1`) | `results/tables/cozum_bilgi.csv|md`, `results/figures/cozum_bilgi_egrisi.png`, `results/figures/cozum_temsil_ornek_*.png` |
 | Ç2 | Çözüm Adım 2: şifreli çalışabilen modeller (D: Π_ROI sınıfı, D2: kare aktivasyon), tam görüntüyle adil karşılaştırma | `python -m experiments.fovea_models` (kuyruk: `experiments\run_fovea_step2_cpu.ps1`) | `results/tables/cozum_modeller.csv|md` |
 | Ç3 | Çözüm Adım 3: gerçekten şifreli çıkarım, doğruluk eşleşmesi, maliyet dökümü (makine boşken) | `python -m experiments.fovea_cost` | `results/tables/cozum_dogruluk_eslesme.csv|md`, `results/tables/cozum_maliyet.csv|md` |
 | Ç4 | Çözüm Adım 4: sızıntı denetimi (paket meta verisi, yan kanal; Π_ROI pozitif kontrol) | `python -m experiments.fovea_leakage` | `results/tables/cozum_sizinti.csv|md` |
+| Ç5a | Çözüm Adım 5, rakip: şifreli özet (HETAL tarzı; ImageNet ResNet-18 özeti + şifreli D/D2, istemci CPU süresi) | `python -m experiments.fovea_baselines` | `results/tables/cozum_rakipler.csv|md` |
+| Ç5b | Çözüm Adım 5, rakip: gürültülü/bulanık bağlam saldırısı (Bi-CryptoNets tarzı) ve aynı düzeyde fayda | `python -m experiments.attack_noisy_context` | `results/tables/saldiri_B_gurultu.csv|md` |
 
 Not: RTX 2070 + cuDNN 9.10'da `channels_last` bellek düzeni eğitimi ~7.5 kat yavaşlattığı için kullanılmıyor (ölçüm: 529 ms/adım yerine 71 ms/adım).
