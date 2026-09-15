@@ -1,0 +1,11 @@
+veri,yontem,saldiri,oznitelikler,n,auc_kat_ort,auc_std,auc_havuz,bos_p95,p_degeri,sans_duzeyinde
+beyin MR (Cheng),Π_ROI,A: paket meta verisi,"ciphertext sayısı, yükleme boyutu",3064,0.561362637106806,0.0,0.550775309643587,0.5092767029024142,0.009900990099009901,hayır
+beyin MR (Cheng),FoveaHE,A: paket meta verisi,"ciphertext sayısı, slot sayısı, yükleme baytı",3064,0.4905237501672385,0.0,0.4894389598307967,0.5202095367968769,0.8514851485148515,evet
+beyin MR (Cheng),Π_ROI,yan kanal (alt küme),"ciphertext sayısı, yükleme boyutu (süre bunlarla doğrusal)",450,0.5566666666666666,0.0,0.5470888888888888,0.5203445631522403,0.009900990099009901,hayır
+beyin MR (Cheng),FoveaHE,yan kanal (alt küme),"sunucu süresi, indirme baytı",450,0.525814814814815,0.0,0.5240888888888888,0.5461699001804724,0.19801980198019803,evet
+beyin MR (Cheng),FoveaHE,yan kanal (alt küme),yalnızca sunucu süresi,450,0.4843703703703704,0.0,0.48511851851851856,0.5397751812585717,0.7326732673267327,evet
+akciğer grafisi (COVID-QU-Ex),Π_ROI,A: paket meta verisi,"ciphertext sayısı, yükleme boyutu",3000,0.5731575,0.0,0.5647841666666668,0.5142800800701022,0.009900990099009901,hayır
+akciğer grafisi (COVID-QU-Ex),FoveaHE,A: paket meta verisi,"ciphertext sayısı, slot sayısı, yükleme baytı",3000,0.5026816666666667,0.0,0.502746,0.5178443866104685,0.42574257425742573,evet
+akciğer grafisi (COVID-QU-Ex),Π_ROI,yan kanal (alt küme),"ciphertext sayısı, yükleme boyutu (süre bunlarla doğrusal)",450,0.5888888888888889,0.0,0.5604592592592593,0.5326572567695098,0.009900990099009901,hayır
+akciğer grafisi (COVID-QU-Ex),FoveaHE,yan kanal (alt küme),"sunucu süresi, indirme baytı",450,0.4681851851851852,0.0,0.47151111111111116,0.5350088407338913,0.8415841584158416,evet
+akciğer grafisi (COVID-QU-Ex),FoveaHE,yan kanal (alt küme),yalnızca sunucu süresi,450,0.44803703703703707,0.0,0.4486666666666667,0.532538244305392,0.9801980198019802,evet

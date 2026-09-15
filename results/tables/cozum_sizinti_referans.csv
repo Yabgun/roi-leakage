@@ -1,0 +1,9 @@
+veri,yontem,saldiri,oznitelikler,n,auc,kaynak
+beyin MR (Cheng),Π_ROI,A: ROI meta verisi,"konum, boyut, şekil",3064.0,0.8298600870754648,"saldiri_A_meta_veri.csv (5 tohum, havuzlanmış kat dışı)"
+beyin MR (Cheng),Π_ROI,B: açık bağlam (ROI gizli),açık pikseller,3064.0,0.9765429813224019,saldiri_B_baglam.csv (5 tohum ortalaması)
+beyin MR (Cheng),FoveaHE,B: açık bağlam,açık piksel yok,,,tanımsal olarak uygulanamaz: sunucu yalnızca ciphertext görür
+beyin MR (Cheng),akıl sağlığı,sunucu görüşü sabit görüntü,bilgisiz girdi,3064.0,0.5,"cozum_bilgi.csv, Adım 1 sabit (beyinde kat ortalaması)"
+akciğer grafisi (COVID-QU-Ex),Π_ROI,A: ROI meta verisi,"konum, boyut, şekil",6788.0,0.8336520742428075,"saldiri_A_meta_veri.csv (5 tohum, havuzlanmış kat dışı)"
+akciğer grafisi (COVID-QU-Ex),Π_ROI,B: açık bağlam (ROI gizli),açık pikseller,6788.0,0.9932040235167541,saldiri_B_baglam.csv (5 tohum ortalaması)
+akciğer grafisi (COVID-QU-Ex),FoveaHE,B: açık bağlam,açık piksel yok,,,tanımsal olarak uygulanamaz: sunucu yalnızca ciphertext görür
+akciğer grafisi (COVID-QU-Ex),akıl sağlığı,sunucu görüşü sabit görüntü,bilgisiz girdi,6788.0,0.5,"cozum_bilgi.csv, Adım 1 sabit (beyinde kat ortalaması)"
