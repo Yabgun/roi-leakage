@@ -1,0 +1,30 @@
+| veri | bozulma | duzey | gorus | aciklama | tohum | auc | ci95_alt | ci95_ust | n | epoch | sure_s |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| beyin MR (Cheng) | gauss | 0.0500 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9713 | 0.9513 | 0.9867 | 3064 | 12 | 235.5302 |
+| beyin MR (Cheng) | gauss | 0.0500 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9909 | 0.9804 | 0.9970 | 3064 | 12 | 188.5892 |
+| beyin MR (Cheng) | gauss | 0.1000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9713 | 0.9516 | 0.9866 | 3064 | 12 | 188.9566 |
+| beyin MR (Cheng) | gauss | 0.1000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9871 | 0.9678 | 0.9971 | 3064 | 12 | 188.9603 |
+| beyin MR (Cheng) | gauss | 0.2000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9726 | 0.9572 | 0.9858 | 3064 | 12 | 189.2143 |
+| beyin MR (Cheng) | gauss | 0.2000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9878 | 0.9728 | 0.9962 | 3064 | 12 | 189.0418 |
+| beyin MR (Cheng) | gauss | 0.4000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9685 | 0.9498 | 0.9831 | 3064 | 12 | 189.4325 |
+| beyin MR (Cheng) | gauss | 0.4000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9862 | 0.9712 | 0.9956 | 3064 | 12 | 189.1322 |
+| beyin MR (Cheng) | bulanik | 2.0000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9786 | 0.9616 | 0.9908 | 3064 | 12 | 192.8624 |
+| beyin MR (Cheng) | bulanik | 2.0000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9936 | 0.9852 | 0.9983 | 3064 | 12 | 191.4789 |
+| beyin MR (Cheng) | bulanik | 4.0000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9784 | 0.9623 | 0.9905 | 3064 | 12 | 194.5580 |
+| beyin MR (Cheng) | bulanik | 4.0000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9933 | 0.9844 | 0.9982 | 3064 | 12 | 193.3005 |
+| beyin MR (Cheng) | bulanik | 8.0000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9744 | 0.9576 | 0.9862 | 3064 | 12 | 203.7974 |
+| beyin MR (Cheng) | bulanik | 8.0000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9939 | 0.9876 | 0.9977 | 3064 | 12 | 200.2004 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.0500 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9916 | 0.9902 | 0.9930 | 6788 | 5 | 179.3511 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.0500 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9961 | 0.9953 | 0.9969 | 6788 | 5 | 178.0656 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.1000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9893 | 0.9877 | 0.9907 | 6788 | 5 | 178.1467 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.1000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9954 | 0.9944 | 0.9962 | 6788 | 5 | 178.3250 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.2000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9864 | 0.9846 | 0.9880 | 6788 | 5 | 178.3690 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.2000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9946 | 0.9936 | 0.9956 | 6788 | 5 | 178.2065 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.4000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9834 | 0.9813 | 0.9852 | 6788 | 5 | 178.3797 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.4000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9932 | 0.9921 | 0.9944 | 6788 | 5 | 178.2970 |
+| akciğer grafisi (COVID-QU-Ex) | bulanik | 2.0000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9919 | 0.9905 | 0.9933 | 6788 | 5 | 180.7318 |
+| akciğer grafisi (COVID-QU-Ex) | bulanik | 2.0000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9958 | 0.9948 | 0.9967 | 6788 | 5 | 180.6566 |
+| akciğer grafisi (COVID-QU-Ex) | bulanik | 4.0000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9912 | 0.9897 | 0.9925 | 6788 | 5 | 182.4203 |
+| akciğer grafisi (COVID-QU-Ex) | bulanik | 4.0000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9956 | 0.9946 | 0.9964 | 6788 | 5 | 182.0647 |
+| akciğer grafisi (COVID-QU-Ex) | bulanik | 8.0000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9882 | 0.9866 | 0.9898 | 6788 | 5 | 188.5671 |
+| akciğer grafisi (COVID-QU-Ex) | bulanik | 8.0000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9943 | 0.9932 | 0.9953 | 6788 | 5 | 188.1805 |
