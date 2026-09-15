@@ -248,28 +248,46 @@ def plot_curve(df: pd.DataFrame, tag: str = ""):
         ax.axvline(SLOTS, color=INK["axis"], lw=0.7)
         ax.text(SLOTS * 1.03, 0.5, "1 ciphertext sınırı (8.192 slot)", transform=ax.get_xaxis_transform(),
                 rotation=90, ha="left", va="center", fontsize=7, color=INK["muted"])
+        vals = d.auc_ort.to_numpy()
+        lo, hi = float(vals.min()), float(vals.max())
+        pad = max(5e-4, 0.12 * (hi - lo))
+        ax.set_ylim(lo - pad, hi + 2 * pad)
+        y_min = ax.get_ylim()[0]
         tam = d[d.yapilandirma == "tam"]
         if len(tam):
             ref = float(tam.auc_ort.iloc[0])
-            for y, text, color in ((ref, f"tam görüntü (224 px): {ref:.4f}", INK["secondary"]),
-                                   (ref - MAX_LOSS, f"ölçüt sınırı: tam − {MAX_LOSS}", INK["muted"])):
-                ax.axhline(y, color=color, lw=0.8)
-                ax.text(0.01, y, text, transform=ax.get_yaxis_transform(), ha="left", va="bottom", fontsize=7,
-                        color=color)
+            ax.axhline(ref, color=INK["secondary"], lw=0.8)
+            ax.text(0.01, ref, f"tam görüntü (224 px): {ref:.4f}", transform=ax.get_yaxis_transform(), ha="left",
+                    va="bottom", fontsize=7, color=INK["secondary"])
+            limit = ref - MAX_LOSS
+            if limit >= y_min:
+                ax.axhline(limit, color=INK["muted"], lw=0.8)
+                ax.text(0.01, limit, f"ölçüt sınırı: tam − {MAX_LOSS}", transform=ax.get_yaxis_transform(),
+                        ha="left", va="bottom", fontsize=7, color=INK["muted"])
+            else:  # sınır tüm noktaların çok altındaysa ekseni sıkıştırmak yerine not düş
+                note = "tüm yapılandırmalar geçiyor" if (d.auc_ort >= limit).all() else "geçmeyen yapılandırma var"
+                ax.text(0.01, 0.02, f"ölçüt sınırı tam − {MAX_LOSS} = {limit:.4f}, eksenin altında: {note}",
+                        transform=ax.transAxes, ha="left", va="bottom", fontsize=7, color=INK["muted"])
         win = d[d.yapilandirma == "tam_pencere"]
         if len(win):
             y = float(win.auc_ort.iloc[0])
             ax.axhline(y, color=INK["muted"], lw=0.8)
             ax.text(0.99, y, f"tam görüntü + ROI penceresi: {y:.4f}", transform=ax.get_yaxis_transform(), ha="right",
-                    va="bottom", fontsize=7, color=INK["muted"])
+                    va="top", fontsize=7, color=INK["muted"])
         ring = dict(edgecolor=INK["surface"], linewidths=0.9, zorder=3)
         if len(uni):
             ax.plot(uni.sifreli_deger, uni.auc_ort, color=SERIES["es"], lw=1.0, zorder=2)
             ax.scatter(uni.sifreli_deger, uni.auc_ort, s=34, color=SERIES["es"], label="eş örnekli küçültme (U)",
                        **ring)
-            for _, r in uni.iterrows():
-                ax.annotate(r.yapilandirma, (r.sifreli_deger, r.auc_ort), xytext=(0, -11), textcoords="offset points",
-                            ha="center", fontsize=7, color=INK["secondary"])
+            for _, r in uni.iterrows():  # yakındaki odaklı noktalar çoğunlukla alttaysa etiket üste
+                near = fov[(fov.sifreli_deger > r.sifreli_deger / 1.6) & (fov.sifreli_deger < r.sifreli_deger * 1.6)]
+                above = len(near) > 0 and (near.auc_ort < r.auc_ort).mean() > 0.5
+                ax.annotate(r.yapilandirma, (r.sifreli_deger, r.auc_ort), xytext=(0, 6 if above else -11),
+                            textcoords="offset points", ha="center", fontsize=7, color=INK["secondary"])
+        uwin = d[specs.map(lambda x: x.window and x.glob != 224)]
+        if len(uwin):  # aynı ton, içi boş işaret: renk tek başına kimlik taşımasın
+            ax.scatter(uwin.sifreli_deger, uwin.auc_ort, s=34, facecolor=INK["surface"], edgecolor=SERIES["es"],
+                       linewidths=1.2, zorder=3, label="eş örnekli + ROI penceresi")
         if len(fov):
             ax.scatter(fov.sifreli_deger, fov.auc_ort, s=34, color=SERIES["odak"], label="odaklı temsil (FoveaHE)",
                        **ring)

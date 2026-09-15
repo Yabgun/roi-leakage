@@ -40,7 +40,8 @@ from he.piroi import PiROI, make_context, random_weights
 LOG = config.LOGS / "fovea_cost.log"
 ORIGINAL = {"brain": 512, "covidqu": 256}
 PRIVATE_RHO = {"brain": 1.0, "covidqu": 0.98}
-DEFAULT_CONFIGS = {"brain": ["F64_G32", "F64_P32k2_G32", "U64"], "covidqu": ["F64_G32", "U64", "U90"]}
+# Adım 1 kararı (15 Eyl): ekonomik F32_G16 ve doğru F64_G32; eş bütçeli eş örnekli referans U64
+DEFAULT_CONFIGS = {"brain": ["F32_G16", "F64_G32", "U64"], "covidqu": ["F32_G16", "F64_G32", "U64"]}
 FAMILY = {"D": "D", "D2": "D", "C": "C"}
 
 
