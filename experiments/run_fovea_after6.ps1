@@ -28,9 +28,10 @@ function Run([string]$module, [string[]]$extra, [string]$logName, [string]$label
   return $code
 }
 
-# Bekleme notu aranan ifadeyi icermez; desen satir sonuna sabit.
-Note "KUYRUK7 BEKLIYOR: kuyruk 6 bitisi (run_fovea_after6.ps1)"
-while (-not (Select-String -Path $log -Pattern '\] KUYRUK6 TAMAMLANDI\s*$' -Quiet)) { Start-Sleep -Seconds 60 }
+# Bekleme notu aranan ifadeyi icermez; desen satir sonuna sabit. KUYRUK6 gunluk cakismasiyla durduruldu; onun isleri ve
+# KUYRUK5'in adim 3-4'u KUYRUK8'de (run_fovea_core34.ps1), bu kuyruk onun bitisini bekler.
+Note "KUYRUK7 BEKLIYOR: kuyruk 8 bitisi (run_fovea_after6.ps1)"
+while (-not (Select-String -Path $log -Pattern '\] KUYRUK8 TAMAMLANDI\s*$' -Quiet)) { Start-Sleep -Seconds 60 }
 Note "KUYRUK7 BASLADI"
 
 # 1) Adim 1: 5 tohum

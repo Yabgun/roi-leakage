@@ -41,7 +41,9 @@ Note "KUYRUK5 BASLADI"
 [void](Run "experiments.fovea_models" @("--dataset", "covidqu", "--device", "cuda") "fovea_models_cxr_v3" "KUYRUK5 adim 2 v3: covidqu")
 
 # 3) Adim 3 ve 4: makine bosken (~2 saat)
-[void](Run "experiments.fovea_cost" @("--n-match", "120", "--reps", "3") "fovea_cost" "KUYRUK5 adim 3: sifreli dogruluk ve maliyet")
-[void](Run "experiments.fovea_leakage" @() "fovea_leakage" "KUYRUK5 adim 4: sizinti denetimi")
+# Not (22:20): ilk surumde cikti adlari betiklerin kendi gunlukleriyle ayniydi (fovea_cost.log, fovea_leakage.log);
+# PermissionError ile dustuler. Adlar duzeltildi; bu iki is KUYRUK8'de (run_fovea_core34.ps1) yeniden calisti.
+[void](Run "experiments.fovea_cost" @("--n-match", "120", "--reps", "3") "kuyruk5_fovea_cost" "KUYRUK5 adim 3: sifreli dogruluk ve maliyet")
+[void](Run "experiments.fovea_leakage" @() "kuyruk5_fovea_leakage" "KUYRUK5 adim 4: sizinti denetimi")
 
 Note "KUYRUK5 TAMAMLANDI"

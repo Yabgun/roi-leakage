@@ -31,7 +31,9 @@ Note "KUYRUK6 BEKLIYOR: kuyruk 5 bitisi (run_fovea_after5.ps1)"
 while (-not (Select-String -Path $log -Pattern '\] KUYRUK5 TAMAMLANDI\s*$' -Quiet)) { Start-Sleep -Seconds 60 }
 Note "KUYRUK6 BASLADI"
 
-[void](Run "experiments.fovea_baselines" @() "fovea_baselines" "KUYRUK6 adim 5: sifreli ozet (HETAL tarzi)")
-[void](Run "experiments.attack_noisy_context" @() "attack_noisy_context" "KUYRUK6 adim 5: gurultulu baglam saldirisi")
+# Not (22:22): cikti adlari betiklerin kendi gunlukleriyle ayniydi (PermissionError); duzeltildi. Bu kuyruk durduruldu,
+# isleri KUYRUK8'de (run_fovea_core34.ps1).
+[void](Run "experiments.fovea_baselines" @() "kuyruk6_fovea_baselines" "KUYRUK6 adim 5: sifreli ozet (HETAL tarzi)")
+[void](Run "experiments.attack_noisy_context" @() "kuyruk6_noisy_context" "KUYRUK6 adim 5: gurultulu baglam saldirisi")
 
 Note "KUYRUK6 TAMAMLANDI"
