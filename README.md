@@ -49,6 +49,7 @@ Tüm deneyler proje kökünden çalıştırılır: `.venv\Scripts\python -m expe
 | Ç4 | Çözüm Adım 4: sızıntı denetimi (paket meta verisi, yan kanal; Π_ROI pozitif kontrol) | `python -m experiments.fovea_leakage` | `results/tables/cozum_sizinti.csv|md` |
 | Ç5a | Çözüm Adım 5, rakip: şifreli özet (HETAL tarzı; ImageNet ResNet-18 özeti + şifreli D/D2, istemci CPU süresi) | `python -m experiments.fovea_baselines` | `results/tables/cozum_rakipler.csv|md` |
 | Ç5b | Çözüm Adım 5, rakip: gürültülü/bulanık bağlam saldırısı (Bi-CryptoNets tarzı) ve aynı düzeyde fayda | `python -m experiments.attack_noisy_context` | `results/tables/saldiri_B_gurultu.csv|md` |
+| Ç6 | Çözüm Adım 6: birleşik özet — hız × doğruluk × sızıntı şekli ve gizlilik şartlı hız tablosu (tüm adımların tablolarını birleştirir) | `python -m experiments.fovea_pareto` | `results/tables/cozum_ozet.csv|md`, `results/figures/cozum_pareto_{brain,covidqu}.png` |
 | ÇB | Özgünlük bonusu: bütçe duyarlı odak (sabit şifreli değer bütçesinde odak ↔ genel bakış payı; Model C ve D) | `python -m experiments.fovea_budget` | `results/tables/cozum_butce.csv|md`, `results/tables/cozum_butce_en_iyi.md`, `results/figures/cozum_butce.png` |
 
 Not: RTX 2070 + cuDNN 9.10'da `channels_last` bellek düzeni eğitimi ~7.5 kat yavaşlattığı için kullanılmıyor (ölçüm: 529 ms/adım yerine 71 ms/adım).

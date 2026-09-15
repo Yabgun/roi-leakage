@@ -250,3 +250,311 @@ Grad-CAM dikkat kütlesinin bölgelere dağılımı:
 ![](figures/savunma_covidqu.png)
 
 ![](figures/savunma_brain.png)
+
+## Çözüm: Odaklı Tam Şifreleme (FoveaHE)
+
+Seçicilik şifrelemede değil çözünürlükte: istemci ROI merkezli, sabit boyutlu, çok çözünürlüklü bir temsil çıkarır ve tamamını şifreler; sunucuya açık piksel ya da değişken meta veri gitmez.
+
+### Adım 1 — bilgi kaybı: hangi temsil yetiyor?
+
+| veri | yapilandirma | sifreli_deger | ciphertext | tohum_sayisi | auc_ort | auc_std | ci95_alt | ci95_ust | auc_kat_ort | tam_fark | olcut |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| akciğer grafisi (COVID-QU-Ex) | sabit | 0 | 0 | 1 | 0.5000 |  | 0.5000 | 0.5000 |  | 0.4966 | - |
+| akciğer grafisi (COVID-QU-Ex) | U32 | 1024 | 1 | 1 | 0.9940 |  | 0.9929 | 0.9950 |  | 0.0026 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F32_G16 | 1283 | 1 | 1 | 0.9937 |  | 0.9925 | 0.9948 |  | 0.0029 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F32_P16k2_G16 | 1539 | 1 | 1 | 0.9937 |  | 0.9925 | 0.9948 |  | 0.0029 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F32_P16k3_G16 | 1539 | 1 | 1 | 0.9937 |  | 0.9925 | 0.9948 |  | 0.0029 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F32_G32 | 2051 | 1 | 1 | 0.9943 |  | 0.9932 | 0.9954 |  | 0.0023 | evet |
+| akciğer grafisi (COVID-QU-Ex) | U48 | 2304 | 1 | 1 | 0.9947 |  | 0.9937 | 0.9956 |  | 0.0019 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F32_P16k2_G32 | 2307 | 1 | 1 | 0.9943 |  | 0.9932 | 0.9954 |  | 0.0023 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F32_P16k3_G32 | 2307 | 1 | 1 | 0.9943 |  | 0.9932 | 0.9954 |  | 0.0023 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F32_P32k2_G16 | 2307 | 1 | 1 | 0.9937 |  | 0.9925 | 0.9947 |  | 0.0029 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F32_P32k3_G16 | 2307 | 1 | 1 | 0.9932 |  | 0.9920 | 0.9944 |  | 0.0034 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F32_P32k2_G32 | 3075 | 1 | 1 | 0.9941 |  | 0.9930 | 0.9951 |  | 0.0025 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F32_P32k3_G32 | 3075 | 1 | 1 | 0.9943 |  | 0.9932 | 0.9954 |  | 0.0023 | evet |
+| akciğer grafisi (COVID-QU-Ex) | U64 | 4096 | 1 | 1 | 0.9953 |  | 0.9944 | 0.9963 |  | 0.0013 | evet |
+| akciğer grafisi (COVID-QU-Ex) | U64_pencere | 4099 | 1 | 1 | 0.9951 |  | 0.9941 | 0.9960 |  | 0.0015 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F64 | 4099 | 1 | 1 | 0.9945 |  | 0.9934 | 0.9956 |  | 0.0021 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F64_G16 | 4355 | 1 | 1 | 0.9950 |  | 0.9940 | 0.9959 |  | 0.0016 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F64_P16k2_G16 | 4611 | 1 | 1 | 0.9950 |  | 0.9939 | 0.9959 |  | 0.0016 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F64_P16k3_G16 | 4611 | 1 | 1 | 0.9950 |  | 0.9940 | 0.9959 |  | 0.0016 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F64_G32 | 5123 | 1 | 1 | 0.9955 |  | 0.9945 | 0.9964 |  | 0.0011 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F64_P16k2_G32 | 5379 | 1 | 1 | 0.9955 |  | 0.9945 | 0.9964 |  | 0.0011 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F64_P16k3_G32 | 5379 | 1 | 1 | 0.9955 |  | 0.9945 | 0.9964 |  | 0.0011 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F64_P32k2_G16 | 5379 | 1 | 1 | 0.9950 |  | 0.9940 | 0.9959 |  | 0.0016 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F64_P32k3_G16 | 5379 | 1 | 1 | 0.9951 |  | 0.9941 | 0.9960 |  | 0.0015 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F64_P32k2_G32 | 6147 | 1 | 1 | 0.9954 |  | 0.9944 | 0.9963 |  | 0.0012 | evet |
+| akciğer grafisi (COVID-QU-Ex) | F64_P32k3_G32 | 6147 | 1 | 1 | 0.9955 |  | 0.9945 | 0.9964 |  | 0.0011 | evet |
+| akciğer grafisi (COVID-QU-Ex) | U90 | 8100 | 1 | 1 | 0.9954 |  | 0.9944 | 0.9964 |  | 0.0012 | evet |
+| akciğer grafisi (COVID-QU-Ex) | U90_pencere | 8103 | 1 | 1 | 0.9955 |  | 0.9945 | 0.9963 |  | 0.0011 | evet |
+| akciğer grafisi (COVID-QU-Ex) | U128 | 16384 | 2 | 1 | 0.9961 |  | 0.9952 | 0.9969 |  | 0.0005 | evet |
+| akciğer grafisi (COVID-QU-Ex) | tam | 50176 | 7 | 1 | 0.9966 |  | 0.9957 | 0.9974 |  | 0.0000 | - |
+| akciğer grafisi (COVID-QU-Ex) | tam_pencere | 50179 | 7 | 1 | 0.9964 |  | 0.9956 | 0.9973 |  | 0.0002 | evet |
+| beyin MR (Cheng) | sabit | 0 | 0 | 1 | 0.5050 |  | 0.4464 | 0.5667 | 0.5000 | 0.4775 | - |
+| beyin MR (Cheng) | U32 | 1024 | 1 | 1 | 0.9791 |  | 0.9641 | 0.9891 | 0.9809 | 0.0034 | evet |
+| beyin MR (Cheng) | F32_G16 | 1283 | 1 | 1 | 0.9924 |  | 0.9861 | 0.9967 | 0.9932 | -0.0099 | evet |
+| beyin MR (Cheng) | F32_P16k2_G16 | 1539 | 1 | 1 | 0.9906 |  | 0.9804 | 0.9967 | 0.9920 | -0.0081 | evet |
+| beyin MR (Cheng) | F32_P16k3_G16 | 1539 | 1 | 1 | 0.9904 |  | 0.9806 | 0.9963 | 0.9918 | -0.0080 | evet |
+| beyin MR (Cheng) | F32_G32 | 2051 | 1 | 1 | 0.9938 |  | 0.9874 | 0.9976 | 0.9946 | -0.0114 | evet |
+| beyin MR (Cheng) | U48 | 2304 | 1 | 1 | 0.9831 |  | 0.9624 | 0.9947 | 0.9850 | -0.0007 | evet |
+| beyin MR (Cheng) | F32_P16k2_G32 | 2307 | 1 | 1 | 0.9927 |  | 0.9843 | 0.9977 | 0.9936 | -0.0102 | evet |
+| beyin MR (Cheng) | F32_P16k3_G32 | 2307 | 1 | 1 | 0.9936 |  | 0.9873 | 0.9974 | 0.9946 | -0.0111 | evet |
+| beyin MR (Cheng) | F32_P32k2_G16 | 2307 | 1 | 1 | 0.9916 |  | 0.9841 | 0.9969 | 0.9929 | -0.0091 | evet |
+| beyin MR (Cheng) | F32_P32k3_G16 | 2307 | 1 | 1 | 0.9917 |  | 0.9823 | 0.9972 | 0.9928 | -0.0093 | evet |
+| beyin MR (Cheng) | F32_P32k2_G32 | 3075 | 1 | 1 | 0.9919 |  | 0.9819 | 0.9976 | 0.9931 | -0.0095 | evet |
+| beyin MR (Cheng) | F32_P32k3_G32 | 3075 | 1 | 1 | 0.9896 |  | 0.9784 | 0.9964 | 0.9914 | -0.0071 | evet |
+| beyin MR (Cheng) | U64 | 4096 | 1 | 1 | 0.9836 |  | 0.9626 | 0.9954 | 0.9860 | -0.0011 | evet |
+| beyin MR (Cheng) | F64 | 4099 | 1 | 1 | 0.9849 |  | 0.9775 | 0.9913 | 0.9854 | -0.0024 | evet |
+| beyin MR (Cheng) | U64_pencere | 4099 | 1 | 1 | 0.9886 |  | 0.9735 | 0.9974 | 0.9904 | -0.0062 | evet |
+| beyin MR (Cheng) | F64_G16 | 4355 | 1 | 1 | 0.9911 |  | 0.9823 | 0.9966 | 0.9924 | -0.0086 | evet |
+| beyin MR (Cheng) | F64_P16k2_G16 | 4611 | 1 | 1 | 0.9922 |  | 0.9852 | 0.9968 | 0.9929 | -0.0097 | evet |
+| beyin MR (Cheng) | F64_P16k3_G16 | 4611 | 1 | 1 | 0.9916 |  | 0.9831 | 0.9970 | 0.9935 | -0.0092 | evet |
+| beyin MR (Cheng) | F64_G32 | 5123 | 1 | 1 | 0.9935 |  | 0.9871 | 0.9976 | 0.9942 | -0.0110 | evet |
+| beyin MR (Cheng) | F64_P16k2_G32 | 5379 | 1 | 1 | 0.9938 |  | 0.9872 | 0.9978 | 0.9943 | -0.0114 | evet |
+| beyin MR (Cheng) | F64_P16k3_G32 | 5379 | 1 | 1 | 0.9928 |  | 0.9855 | 0.9972 | 0.9941 | -0.0104 | evet |
+| beyin MR (Cheng) | F64_P32k2_G16 | 5379 | 1 | 1 | 0.9918 |  | 0.9844 | 0.9970 | 0.9932 | -0.0093 | evet |
+| beyin MR (Cheng) | F64_P32k3_G16 | 5379 | 1 | 1 | 0.9891 |  | 0.9758 | 0.9968 | 0.9908 | -0.0066 | evet |
+| beyin MR (Cheng) | F64_P32k2_G32 | 6147 | 1 | 1 | 0.9902 |  | 0.9780 | 0.9973 | 0.9916 | -0.0077 | evet |
+| beyin MR (Cheng) | F64_P32k3_G32 | 6147 | 1 | 1 | 0.9928 |  | 0.9850 | 0.9978 | 0.9938 | -0.0104 | evet |
+| beyin MR (Cheng) | U90 | 8100 | 1 | 1 | 0.9893 |  | 0.9757 | 0.9971 | 0.9913 | -0.0068 | evet |
+| beyin MR (Cheng) | U90_pencere | 8103 | 1 | 1 | 0.9919 |  | 0.9804 | 0.9982 | 0.9936 | -0.0094 | evet |
+| beyin MR (Cheng) | U128 | 16384 | 2 | 1 | 0.9843 |  | 0.9636 | 0.9957 | 0.9874 | -0.0018 | evet |
+| beyin MR (Cheng) | tam | 50176 | 7 | 5 | 0.9841 | 0.0011 |  |  | 0.9866 | 0.0000 | - |
+| beyin MR (Cheng) | tam_pencere | 50179 | 7 | 1 | 0.9921 |  | 0.9817 | 0.9979 | 0.9941 | -0.0097 | evet |
+
+
+![](figures/cozum_bilgi_egrisi.png)
+
+![](figures/cozum_temsil_ornek_brain.png)
+
+![](figures/cozum_temsil_ornek_covidqu.png)
+
+### Adım 2 — şifreli çalışabilen modeller (D, D2, C)
+
+| veri | model | temsil | temsil_turu | sifreli_deger | tohum_sayisi | auc_ort | auc_std | tam_fark | wd_secilen | lr_secilen | epoch_ort | sinirda | olcut |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| akciğer grafisi (COVID-QU-Ex) | C | F32_G16 | odakli | 1280 | 1 | 0.9267 |  | 0.0069 | 0.01 | 0.001 | 24.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | C | U64 | es_ornekli | 4096 | 1 | 0.9164 |  | 0.0172 | 0.01 | 0.001 | 25.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | C | F64 | odakli | 4096 | 1 | 0.9204 |  | 0.0132 | 0.0001 | 0.001 | 39.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | C | F64_G32 | odakli | 5120 | 1 | 0.9360 |  | -0.0024 | 1 | 0.001 | 40.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | C | F64_P32k2_G32 | odakli | 6144 | 1 | 0.9357 |  | -0.0020 | 1 | 0.001 | 42.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | C | U90 | es_ornekli | 8100 | 1 | 0.9213 |  | 0.0124 | 0.01 | 0.001 | 23.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | C | tam | tam_224 | 50176 | 1 | 0.9292 |  | 0.0045 | 0.0001 | 0.001 | 21.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | C | U256 | tam_orijinal | 65536 | 1 | 0.9337 |  | 0.0000 | 0.01 | 0.001 | 27.0000 |  | - |
+| akciğer grafisi (COVID-QU-Ex) | D | sabit | sabit | 0 | 1 | 0.5000 |  | 0.4011 | 1 | 0.001 | 5.0000 |  | - |
+| akciğer grafisi (COVID-QU-Ex) | D | F32_G16 | odakli | 1283 | 1 | 0.9152 |  | -0.0141 | 0.01 | 0.001 | 21.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | D | U64 | es_ornekli | 4096 | 1 | 0.8676 |  | 0.0335 | 0.01 | 0.001 | 33.0000 |  | hayır |
+| akciğer grafisi (COVID-QU-Ex) | D | F64 | odakli | 4099 | 1 | 0.9004 |  | 0.0007 | 0.0001 | 0.001 | 13.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | D | F64_G32 | odakli | 5123 | 1 | 0.9153 |  | -0.0141 | 0.01 | 0.001 | 19.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | D | F64_P32k2_G32 | odakli | 6147 | 1 | 0.9151 |  | -0.0140 | 0.01 | 0.001 | 19.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | D | U90 | es_ornekli | 8100 | 1 | 0.8754 |  | 0.0257 | 0.01 | 0.001 | 40.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | D | tam | tam_224 | 50176 | 1 | 0.8892 |  | 0.0119 | 0.0001 | 0.001 | 16.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | D | U256 | tam_orijinal | 65536 | 1 | 0.9011 |  | 0.0000 | 0.0001 | 0.001 | 18.0000 |  | - |
+| akciğer grafisi (COVID-QU-Ex) | D2 | sabit | sabit | 0 | 1 | 0.5000 |  | 0.4465 | 1 | 0.001 | 7.0000 |  | - |
+| akciğer grafisi (COVID-QU-Ex) | D2 | F32_G16 | odakli | 1283 | 1 | 0.9517 |  | -0.0052 | 0.01 | 0.001 | 15.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | D2 | U64 | es_ornekli | 4096 | 1 | 0.9368 |  | 0.0097 | 0.0001 | 0.001 | 10.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | D2 | F64 | odakli | 4099 | 1 | 0.9461 |  | 0.0004 | 0.01 | 0.001 | 11.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | D2 | F64_G32 | odakli | 5123 | 1 | 0.9504 |  | -0.0038 | 0.01 | 0.001 | 9.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | D2 | F64_P32k2_G32 | odakli | 6147 | 1 | 0.9524 |  | -0.0059 | 0.01 | 0.001 | 10.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | D2 | U90 | es_ornekli | 8100 | 1 | 0.9413 |  | 0.0052 | 0.01 | 0.001 | 11.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | D2 | tam | tam_224 | 50176 | 1 | 0.9386 |  | 0.0079 | 0.0001 | 0.001 | 10.0000 |  | evet |
+| akciğer grafisi (COVID-QU-Ex) | D2 | U256 | tam_orijinal | 65536 | 1 | 0.9465 |  | 0.0000 | 0.0001 | 0.001 | 14.0000 |  | - |
+| beyin MR (Cheng) | C | F32_G16 | odakli | 1280 | 1 | 0.9505 |  | -0.1091 | 1/1/1/1/1 | 0.001/0.001/0.001/0.001/0.001 | 61.0000 |  | evet |
+| beyin MR (Cheng) | C | U64 | es_ornekli | 4096 | 1 | 0.8486 |  | -0.0072 | 1/1/1/1/0.01 | 0.001/0.001/0.001/0.001/0.001 | 5.4000 |  | evet |
+| beyin MR (Cheng) | C | F64 | odakli | 4096 | 1 | 0.8877 |  | -0.0462 | 1/1/1/1/1 | 0.001/0.001/0.001/0.001/0.001 | 29.6000 |  | evet |
+| beyin MR (Cheng) | C | F64_G32 | odakli | 5120 | 1 | 0.9223 |  | -0.0809 | 1/1/1/1/1 | 0.001/0.001/0.001/0.001/0.001 | 22.0000 |  | evet |
+| beyin MR (Cheng) | C | F64_P32k2_G32 | odakli | 6144 | 1 | 0.8970 |  | -0.0556 | 1/1/1/1/1 | 0.001/0.001/0.001/0.001/0.001 | 6.8000 |  | evet |
+| beyin MR (Cheng) | C | U90 | es_ornekli | 8100 | 1 | 0.8470 |  | -0.0055 | 1/1/1/1/1 | 0.001/0.001/0.001/0.001/0.001 | 7.8000 |  | evet |
+| beyin MR (Cheng) | C | tam | tam_224 | 50176 | 1 | 0.8459 |  | -0.0045 | 1/1/1/1/0.01 | 0.001/0.001/0.001/0.001/0.001 | 6.2000 |  | evet |
+| beyin MR (Cheng) | C | U512 | tam_orijinal | 262144 | 1 | 0.8414 |  | 0.0000 | 10/1/1/1/1 | 0.001/0.001/0.001/0.001/0.001 | 6.2000 |  | - |
+| beyin MR (Cheng) | D | sabit | sabit | 0 | 1 | 0.4707 |  | 0.4106 | 0.0001/0.0001/0.0001/1/0.0001 | 0.001/0.001/0.001/0.001/0.001 | 6.8000 |  | - |
+| beyin MR (Cheng) | D | F32_G16 | odakli | 1283 | 1 | 0.9472 |  | -0.0659 | 10/1/1/10/10 | 0.001/0.001/0.001/0.001/0.001 | 11.8000 |  | evet |
+| beyin MR (Cheng) | D | U64 | es_ornekli | 4096 | 1 | 0.8788 |  | 0.0025 | 10/10/10/10/10 | 0.001/0.001/0.001/0.001/0.001 | 8.8000 |  | evet |
+| beyin MR (Cheng) | D | F64 | odakli | 4099 | 1 | 0.8635 |  | 0.0178 | 10/10/10/10/100 | 0.001/0.001/0.001/0.001/0.0001 | 7.6000 |  | evet |
+| beyin MR (Cheng) | D | F64_G32 | odakli | 5123 | 1 | 0.9468 |  | -0.0655 | 10/10/10/10/10 | 0.001/0.001/0.001/0.001/0.001 | 10.4000 |  | evet |
+| beyin MR (Cheng) | D | F64_P32k2_G32 | odakli | 6147 | 1 | 0.9532 |  | -0.0719 | 10/10/10/10/10 | 0.001/0.001/0.001/0.001/0.001 | 6.6000 |  | evet |
+| beyin MR (Cheng) | D | U90 | es_ornekli | 8100 | 1 | 0.8805 |  | 0.0008 | 10/10/10/10/10 | 0.001/0.001/0.001/0.001/0.001 | 5.8000 |  | evet |
+| beyin MR (Cheng) | D | tam | tam_224 | 50176 | 1 | 0.8757 |  | 0.0056 | 100/100/10/100/10 | 0.0001/0.0001/0.001/0.0001/0.001 | 9.4000 |  | evet |
+| beyin MR (Cheng) | D | U512 | tam_orijinal | 262144 | 1 | 0.8813 |  | 0.0000 | 100/100/10/100/100 | 0.0001/0.001/0.001/0.0001/0.0001 | 24.6000 |  | - |
+| beyin MR (Cheng) | D2 | sabit | sabit | 0 | 1 | 0.4815 |  | 0.4003 | 0.01/0.01/0.0001/10/0.0001 | 0.001/0.001/0.001/0.001/0.001 | 5.6000 |  | - |
+| beyin MR (Cheng) | D2 | F32_G16 | odakli | 1283 | 1 | 0.9169 |  | -0.0350 | 1/0.01/1/1/1 | 0.001/0.001/0.001/0.001/0.001 | 20.0000 |  | evet |
+| beyin MR (Cheng) | D2 | U64 | es_ornekli | 4096 | 1 | 0.8651 |  | 0.0168 | 1/0.0001/0.0001/0.0001/0.0001 | 0.001/0.001/0.001/0.001/0.001 | 4.8000 |  | evet |
+| beyin MR (Cheng) | D2 | F64 | odakli | 4099 | 1 | 0.8500 |  | 0.0319 | 1/1/1/1/1 | 0.001/0.001/0.001/0.001/0.001 | 21.8000 |  | hayır |
+| beyin MR (Cheng) | D2 | F64_G32 | odakli | 5123 | 1 | 0.9096 |  | -0.0277 | 1/1/1/1/1 | 0.001/0.001/0.001/0.001/0.001 | 17.8000 |  | evet |
+| beyin MR (Cheng) | D2 | F64_P32k2_G32 | odakli | 6147 | 1 | 0.9029 |  | -0.0210 | 0.01/1/0.01/1/1 | 0.001/0.001/0.001/0.001/0.001 | 16.6000 |  | evet |
+| beyin MR (Cheng) | D2 | U90 | es_ornekli | 8100 | 1 | 0.8614 |  | 0.0205 | 1/0.0001/0.01/0.0001/0.0001 | 0.001/0.001/0.001/0.001/0.001 | 6.6000 |  | evet |
+| beyin MR (Cheng) | D2 | tam | tam_224 | 50176 | 1 | 0.8723 |  | 0.0096 | 1/1/0.01/0.0001/0.01 | 0.001/0.001/0.001/0.001/0.001 | 11.8000 |  | evet |
+| beyin MR (Cheng) | D2 | U512 | tam_orijinal | 262144 | 1 | 0.8819 |  | 0.0000 | 1/0.01/1/1/0.0001 | 0.001/0.001/0.001/0.001/0.001 | 21.6000 |  | - |
+
+
+### Adım 3 — şifreli doğruluk eşleşmesi ve maliyet
+
+| veri | model | temsil | n | maks_mutlak_logit_hatasi | ort_mutlak_logit_hatasi | argmax_uyumu | auc_sifresiz | auc_sifreli | auc_farki | sure_s |
+|---|---|---|---|---|---|---|---|---|---|---|
+| beyin MR (Cheng) | D | F32_G16 | 120 | 2.87e-05 | 8.91e-06 | 1 | 0.93 | 0.93 | 0 | 144 |
+| beyin MR (Cheng) | D2 | F32_G16 | 120 | 8.23e-05 | 1.22e-05 | 1 | 0.921 | 0.921 | 0 | 154 |
+| beyin MR (Cheng) | C | F32_G16 | 120 | 0.000141 | 3.45e-05 | 1 | 0.944 | 0.944 | 0 | 56.4 |
+| beyin MR (Cheng) | D | F64_G32 | 120 | 3.88e-05 | 1.08e-05 | 1 | 0.938 | 0.938 | 0 | 165 |
+| beyin MR (Cheng) | D2 | F64_G32 | 120 | 0.000102 | 1.36e-05 | 1 | 0.932 | 0.932 | 0 | 176 |
+| beyin MR (Cheng) | C | F64_G32 | 120 | 0.00013 | 3.73e-05 | 1 | 0.935 | 0.935 | 0 | 65.1 |
+| beyin MR (Cheng) | D | U64 | 120 | 7.23e-05 | 7.74e-06 | 1 | 0.916 | 0.916 | 0 | 153 |
+| beyin MR (Cheng) | D2 | U64 | 120 | 7.49e-05 | 1.05e-05 | 1 | 0.891 | 0.891 | 0 | 164 |
+| beyin MR (Cheng) | C | U64 | 120 | 7.25e-05 | 2.16e-05 | 1 | 0.874 | 0.874 | 0 | 37.9 |
+| akciğer grafisi (COVID-QU-Ex) | D | F32_G16 | 120 | 3.87e-05 | 6.67e-06 | 1 | 0.899 | 0.899 | 0 | 143 |
+| akciğer grafisi (COVID-QU-Ex) | D2 | F32_G16 | 120 | 0.000159 | 2.83e-05 | 1 | 0.945 | 0.945 | 0 | 152 |
+| akciğer grafisi (COVID-QU-Ex) | C | F32_G16 | 120 | 6.68e-05 | 2.47e-05 | 1 | 0.92 | 0.92 | 0 | 56 |
+| akciğer grafisi (COVID-QU-Ex) | D | F64_G32 | 120 | 3.78e-05 | 7.76e-06 | 1 | 0.919 | 0.919 | 0 | 164 |
+| akciğer grafisi (COVID-QU-Ex) | D2 | F64_G32 | 120 | 0.000143 | 2.14e-05 | 1 | 0.955 | 0.955 | 0 | 174 |
+| akciğer grafisi (COVID-QU-Ex) | C | F64_G32 | 120 | 7.21e-05 | 2.58e-05 | 1 | 0.952 | 0.952 | 0 | 65.3 |
+| akciğer grafisi (COVID-QU-Ex) | D | U64 | 120 | 3.82e-05 | 7.32e-06 | 1 | 0.879 | 0.879 | 0 | 153 |
+| akciğer grafisi (COVID-QU-Ex) | D2 | U64 | 120 | 0.000102 | 1.69e-05 | 1 | 0.923 | 0.923 | 0 | 162 |
+| akciğer grafisi (COVID-QU-Ex) | C | U64 | 120 | 7.71e-05 | 1.73e-05 | 1 | 0.906 | 0.906 | 0 | 35.4 |
+
+| veri | aile | yontem | model | temsil | sifreli_deger | ciphertext | tekrar | istemci_on_isleme_s | sifreleme_s | sunucu_s | cozme_s | toplam_s | toplam_std | uctan_uca_s | yukleme_MB | indirme_MB | hiz_kazanci_tam | hiz_kazanci_gizlilik_sartli_piroi |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| beyin MR (Cheng) | D | tam şifreleme | D | 512 px | 262144 | 32 | 3 | 0.007 | 0.357 | 44.096 | 0.005 | 44.457 | 0.492 | 44.465 | 27.384 |  | 1.000 | 1.000 |
+| beyin MR (Cheng) | C | tam şifreleme | C | 512 px | 262144 | 32 | 3 | 0.007 | 0.395 | 9.764 | 0.002 | 10.160 | 0.154 | 10.168 | 27.386 | 0.787 | 1.000 |  |
+| beyin MR (Cheng) | D | FoveaHE-D | D | F32_G16 | 1283 | 1 | 3 | 0.010 | 0.010 | 1.198 | 0.005 | 1.214 | 0.049 | 1.224 | 0.856 | 1.379 | 36.635 | 36.635 |
+| beyin MR (Cheng) | D | FoveaHE-D (PiROI.run) | D | F32_G16 | 1283 | 1 | 3 | 0.010 | 0.010 | 1.185 | 0.005 | 1.200 | 0.043 | 1.211 | 0.855 |  | 37.038 | 37.038 |
+| beyin MR (Cheng) | D | FoveaHE-D2 | D2 | F32_G16 | 1283 | 1 | 3 | 0.009 | 0.010 | 1.267 | 0.002 | 1.279 | 0.025 | 1.288 | 0.856 | 0.787 | 34.759 | 34.759 |
+| beyin MR (Cheng) | C | FoveaHE-C | C | F32_G16 | 1280 | 2 | 3 | 0.010 | 0.019 | 0.455 | 0.002 | 0.477 | 0.016 | 0.486 | 1.712 | 0.787 | 21.317 |  |
+| beyin MR (Cheng) | D | FoveaHE-D | D | F64_G32 | 5123 | 1 | 3 | 0.009 | 0.010 | 1.382 | 0.005 | 1.397 | 0.048 | 1.407 | 0.856 | 1.380 | 31.815 | 31.815 |
+| beyin MR (Cheng) | D | FoveaHE-D (PiROI.run) | D | F64_G32 | 5123 | 1 | 3 | 0.009 | 0.011 | 1.368 | 0.005 | 1.384 | 0.035 | 1.393 | 0.856 |  | 32.128 | 32.128 |
+| beyin MR (Cheng) | D | FoveaHE-D2 | D2 | F64_G32 | 5123 | 1 | 3 | 0.012 | 0.012 | 1.519 | 0.002 | 1.533 | 0.054 | 1.545 | 0.856 | 0.787 | 29.000 | 29.000 |
+| beyin MR (Cheng) | C | FoveaHE-C | C | F64_G32 | 5120 | 2 | 3 | 0.010 | 0.022 | 0.552 | 0.002 | 0.577 | 0.036 | 0.587 | 1.711 | 0.787 | 17.615 |  |
+| beyin MR (Cheng) | D | FoveaHE-D | D | U64 | 4096 | 1 | 3 | 0.010 | 0.010 | 1.319 | 0.005 | 1.334 | 0.064 | 1.344 | 0.856 | 1.380 | 33.330 | 33.330 |
+| beyin MR (Cheng) | D | FoveaHE-D (PiROI.run) | D | U64 | 4096 | 1 | 3 | 0.010 | 0.010 | 1.319 | 0.005 | 1.334 | 0.087 | 1.345 | 0.856 |  | 33.319 | 33.319 |
+| beyin MR (Cheng) | D | FoveaHE-D2 | D2 | U64 | 4096 | 1 | 3 | 0.012 | 0.012 | 1.448 | 0.002 | 1.461 | 0.040 | 1.473 | 0.856 | 0.787 | 30.429 | 30.429 |
+| beyin MR (Cheng) | C | FoveaHE-C | C | U64 | 4096 | 1 | 3 | 0.009 | 0.012 | 0.309 | 0.002 | 0.323 | 0.030 | 0.332 | 0.856 | 0.787 | 31.459 |  |
+| akciğer grafisi (COVID-QU-Ex) | D | tam şifreleme | D | 256 px | 65536 | 8 | 3 | 0.004 | 0.086 | 10.267 | 0.005 | 10.358 | 0.066 | 10.362 | 6.846 |  | 1.000 | 0.995 |
+| akciğer grafisi (COVID-QU-Ex) | D | Π_ROI %98 şifreli (gizlilik şartlı) | D | 256 px | 64009 | 8 | 3 | 0.004 | 0.080 | 10.219 | 0.004 | 10.304 | 0.013 | 10.308 | 6.846 |  | 1.005 | 1.000 |
+| akciğer grafisi (COVID-QU-Ex) | C | tam şifreleme | C | 256 px | 65536 | 8 | 3 | 0.004 | 0.099 | 2.407 | 0.002 | 2.507 | 0.039 | 2.512 | 6.847 | 0.787 | 1.000 |  |
+| akciğer grafisi (COVID-QU-Ex) | D | FoveaHE-D | D | F32_G16 | 1283 | 1 | 3 | 0.007 | 0.010 | 1.175 | 0.005 | 1.189 | 0.004 | 1.196 | 0.856 | 1.381 | 8.708 | 8.663 |
+| akciğer grafisi (COVID-QU-Ex) | D | FoveaHE-D (PiROI.run) | D | F32_G16 | 1283 | 1 | 3 | 0.007 | 0.010 | 1.165 | 0.005 | 1.180 | 0.038 | 1.187 | 0.856 |  | 8.777 | 8.732 |
+| akciğer grafisi (COVID-QU-Ex) | D | FoveaHE-D2 | D2 | F32_G16 | 1283 | 1 | 3 | 0.004 | 0.013 | 1.284 | 0.002 | 1.299 | 0.044 | 1.303 | 0.856 | 0.787 | 7.974 | 7.932 |
+| akciğer grafisi (COVID-QU-Ex) | C | FoveaHE-C | C | F32_G16 | 1280 | 2 | 3 | 0.005 | 0.019 | 0.452 | 0.002 | 0.473 | 0.014 | 0.478 | 1.712 | 0.787 | 5.296 |  |
+| akciğer grafisi (COVID-QU-Ex) | D | FoveaHE-D | D | F64_G32 | 5123 | 1 | 3 | 0.004 | 0.011 | 1.420 | 0.005 | 1.435 | 0.074 | 1.440 | 0.856 | 1.381 | 7.216 | 7.178 |
+| akciğer grafisi (COVID-QU-Ex) | D | FoveaHE-D (PiROI.run) | D | F64_G32 | 5123 | 1 | 3 | 0.004 | 0.010 | 1.349 | 0.005 | 1.365 | 0.013 | 1.369 | 0.856 |  | 7.591 | 7.551 |
+| akciğer grafisi (COVID-QU-Ex) | D | FoveaHE-D2 | D2 | F64_G32 | 5123 | 1 | 3 | 0.004 | 0.011 | 1.475 | 0.002 | 1.488 | 0.032 | 1.493 | 0.856 | 0.787 | 6.960 | 6.924 |
+| akciğer grafisi (COVID-QU-Ex) | C | FoveaHE-C | C | F64_G32 | 5120 | 2 | 3 | 0.005 | 0.023 | 0.542 | 0.002 | 0.567 | 0.028 | 0.572 | 1.712 | 0.787 | 4.420 |  |
+| akciğer grafisi (COVID-QU-Ex) | D | FoveaHE-D | D | U64 | 4096 | 1 | 3 | 0.003 | 0.010 | 1.311 | 0.005 | 1.326 | 0.062 | 1.330 | 0.856 | 1.379 | 7.810 | 7.769 |
+| akciğer grafisi (COVID-QU-Ex) | D | FoveaHE-D (PiROI.run) | D | U64 | 4096 | 1 | 3 | 0.003 | 0.010 | 1.311 | 0.005 | 1.325 | 0.045 | 1.329 | 0.856 |  | 7.815 | 7.774 |
+| akciğer grafisi (COVID-QU-Ex) | D | FoveaHE-D2 | D2 | U64 | 4096 | 1 | 3 | 0.003 | 0.010 | 1.371 | 0.002 | 1.383 | 0.038 | 1.386 | 0.856 | 0.787 | 7.488 | 7.449 |
+| akciğer grafisi (COVID-QU-Ex) | C | FoveaHE-C | C | U64 | 4096 | 1 | 3 | 0.003 | 0.012 | 0.289 | 0.002 | 0.302 | 0.025 | 0.305 | 0.856 | 0.787 | 8.293 |  |
+
+
+### Adım 4 — sızıntı denetimi: sunucunun gördüğü
+
+# Çözüm Adım 4: sızıntı denetimi
+
+Ana ölçü kat ortalaması saldırgan AUC'si (5 tohum; sınıf dengeli katlar, beyinde hasta bazlı). `bos_p95`: etiket permütasyonuyla boş dağılımın %95'lik değeri; `sans_duzeyinde = evet` gözlenen AUC bu değeri aşmıyor demektir. Π_ROI satırları aynı örneklem ve protokolle pozitif kontroldür.
+
+| veri | yontem | saldiri | oznitelikler | n | auc_kat_ort | auc_std | bos_p95 | p_degeri | sans_duzeyinde | auc_havuz |
+|---|---|---|---|---|---|---|---|---|---|---|
+| beyin MR (Cheng) | Π_ROI | A: paket meta verisi | ciphertext sayısı, yükleme boyutu | 3064 | 0.5614 | 0.0000 | 0.5093 | 0.0099 | hayır | 0.5508 |
+| beyin MR (Cheng) | FoveaHE | A: paket meta verisi | ciphertext sayısı, slot sayısı, yükleme baytı | 3064 | 0.4905 | 0.0000 | 0.5202 | 0.8515 | evet | 0.4894 |
+| beyin MR (Cheng) | Π_ROI | yan kanal (alt küme) | ciphertext sayısı, yükleme boyutu (süre bunlarla doğrusal) | 450 | 0.5567 | 0.0000 | 0.5203 | 0.0099 | hayır | 0.5471 |
+| beyin MR (Cheng) | FoveaHE | yan kanal (alt küme) | sunucu süresi, indirme baytı | 450 | 0.5258 | 0.0000 | 0.5462 | 0.1980 | evet | 0.5241 |
+| beyin MR (Cheng) | FoveaHE | yan kanal (alt küme) | yalnızca sunucu süresi | 450 | 0.4844 | 0.0000 | 0.5398 | 0.7327 | evet | 0.4851 |
+| akciğer grafisi (COVID-QU-Ex) | Π_ROI | A: paket meta verisi | ciphertext sayısı, yükleme boyutu | 3000 | 0.5732 | 0.0000 | 0.5143 | 0.0099 | hayır | 0.5648 |
+| akciğer grafisi (COVID-QU-Ex) | FoveaHE | A: paket meta verisi | ciphertext sayısı, slot sayısı, yükleme baytı | 3000 | 0.5027 | 0.0000 | 0.5178 | 0.4257 | evet | 0.5027 |
+| akciğer grafisi (COVID-QU-Ex) | Π_ROI | yan kanal (alt küme) | ciphertext sayısı, yükleme boyutu (süre bunlarla doğrusal) | 450 | 0.5889 | 0.0000 | 0.5327 | 0.0099 | hayır | 0.5605 |
+| akciğer grafisi (COVID-QU-Ex) | FoveaHE | yan kanal (alt küme) | sunucu süresi, indirme baytı | 450 | 0.4682 | 0.0000 | 0.5350 | 0.8416 | evet | 0.4715 |
+| akciğer grafisi (COVID-QU-Ex) | FoveaHE | yan kanal (alt küme) | yalnızca sunucu süresi | 450 | 0.4480 | 0.0000 | 0.5325 | 0.9802 | evet | 0.4487 |
+
+## Referanslar (kesin tablolardan)
+
+| veri | yontem | saldiri | oznitelikler | n | auc | kaynak |
+|---|---|---|---|---|---|---|
+| beyin MR (Cheng) | Π_ROI | A: ROI meta verisi | konum, boyut, şekil | 3064.0000 | 0.8299 | saldiri_A_meta_veri.csv (5 tohum, havuzlanmış kat dışı) |
+| beyin MR (Cheng) | Π_ROI | B: açık bağlam (ROI gizli) | açık pikseller | 3064.0000 | 0.9765 | saldiri_B_baglam.csv (5 tohum ortalaması) |
+| beyin MR (Cheng) | FoveaHE | B: açık bağlam | açık piksel yok |  |  | tanımsal olarak uygulanamaz: sunucu yalnızca ciphertext görür |
+| beyin MR (Cheng) | akıl sağlığı | sunucu görüşü sabit görüntü | bilgisiz girdi | 3064.0000 | 0.5000 | cozum_bilgi.csv, Adım 1 sabit (beyinde kat ortalaması) |
+| akciğer grafisi (COVID-QU-Ex) | Π_ROI | A: ROI meta verisi | konum, boyut, şekil | 6788.0000 | 0.8337 | saldiri_A_meta_veri.csv (5 tohum, havuzlanmış kat dışı) |
+| akciğer grafisi (COVID-QU-Ex) | Π_ROI | B: açık bağlam (ROI gizli) | açık pikseller | 6788.0000 | 0.9932 | saldiri_B_baglam.csv (5 tohum ortalaması) |
+| akciğer grafisi (COVID-QU-Ex) | FoveaHE | B: açık bağlam | açık piksel yok |  |  | tanımsal olarak uygulanamaz: sunucu yalnızca ciphertext görür |
+| akciğer grafisi (COVID-QU-Ex) | akıl sağlığı | sunucu görüşü sabit görüntü | bilgisiz girdi | 6788.0000 | 0.5000 | cozum_bilgi.csv, Adım 1 sabit (beyinde kat ortalaması) |
+
+## Sızıntı fonksiyonları: sunucunun öğrendiği
+
+| Yöntem | Sunucunun öğrendiği |
+|---|---|
+| Π_ROI (ePrint 2026/103) | model ağırlıkları; ROI dışındaki tüm açık pikseller; ROI konumu, boyutu ve şekli; girdi boyutu; ROI ciphertext sayısı ve yükleme boyutu (ROI alanıyla değişir) |
+| Encrypt What Matters (arXiv 2609.09357) | ROI dışı açık bölge ve ROI yerleşimi (ROI dışı açık kabul edilir) |
+| Bi-CryptoNets (arXiv 2402.01296) | hassas olmayan kısım (gürültü eklenmiş ama açık) |
+| FoveaHE (odaklı tam şifreleme) | yalnızca herkese açık sabitler: CKKS parametreleri (N = 16384), slot sayısı (8.192), ciphertext sayısı (1), model mimarisi; her hasta için aynı |
+
+## Protokol kuralı (IND-CPA-D)
+
+- Çözülen sonuç (logit, olasılık ya da karar) sunucuya geri gönderilmez; sunucuya çözme kâhini verilmez.
+- Gerekçe: CKKS'de çözülmüş sonuçlara erişen sunucu gizli anahtarı kurtarabilir (IND-CPA-D; bu projedeki PoC `pilot/indcpad_poc_tenseal.py`, TenSEAL ile 0.15 s).
+- Model ağırlıkları sunucuda açık metindir (Π_ROI ile aynı tehdit modeli); model gizliliği kapsam dışıdır.
+
+
+### Adım 5a — rakip: şifreli özet (HETAL tarzı)
+
+| veri | yontem | model | tohum | auc | ci95_alt | ci95_ust | n | sifreli_deger | wd_lr | aktarim_hatasi | istemci_on_isleme_s | istemci_on_isleme_tek_cekirdek_s | egitim_s | maks_mutlak_logit_hatasi | argmax_uyumu | auc_farki_eslesme | ciphertext | sifreleme_s | sunucu_s | cozme_s | toplam_s | yukleme_MB | indirme_MB | uctan_uca_s |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| beyin MR (Cheng) | şifreli özet (ImageNet ResNet-18, 512) | D | 0 | 0.9558 | 0.9362 | 0.9721 | 3064 | 512 | 10@0.001/1@0.001/1@0.001/10@0.001/1@0.001 | 0.0000 | 0.0235 | 0.0546 | 13.6971 | 0.0000 | 1.0000 | 0.0000 | 1 | 0.0095 | 0.9959 | 0.0047 | 1.0101 | 0.8554 | 1.3789 | 1.0336 |
+| beyin MR (Cheng) | şifreli özet (ImageNet ResNet-18, 512) | D2 | 0 | 0.9447 | 0.9244 | 0.9629 | 3064 | 512 | 1@0.001/1@0.001/1@0.001/1@0.001/0.01@0.001 | 0.0000 | 0.0235 | 0.0546 | 17.4766 | 0.0001 | 1.0000 | 0.0000 | 1 | 0.0094 | 1.0651 | 0.0019 | 1.0764 | 0.8553 | 0.7869 | 1.0999 |
+| akciğer grafisi (COVID-QU-Ex) | şifreli özet (ImageNet ResNet-18, 512) | D | 0 | 0.9674 | 0.9643 | 0.9702 | 6788 | 512 | 0.0001@0.001 | 0.0000 | 0.0226 | 0.0505 | 16.2306 | 0.0000 | 1.0000 | 0.0000 | 1 | 0.0093 | 0.9492 | 0.0044 | 0.9629 | 0.8553 | 1.3794 | 0.9855 |
+| akciğer grafisi (COVID-QU-Ex) | şifreli özet (ImageNet ResNet-18, 512) | D2 | 0 | 0.9812 | 0.9787 | 0.9832 | 6788 | 512 | 1@0.001 | 0.0000 | 0.0226 | 0.0505 | 21.9922 | 0.0000 | 1.0000 | 0.0000 | 1 | 0.0090 | 1.0493 | 0.0019 | 1.0601 | 0.8553 | 0.7869 | 1.0828 |
+
+
+### Adım 5b — rakip: bozuk açık bağlam (Bi-CryptoNets tarzı)
+
+| veri | bozulma | duzey | gorus | aciklama | tohum | auc | ci95_alt | ci95_ust | n | epoch | sure_s |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| beyin MR (Cheng) | gauss | 0.0500 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9713 | 0.9513 | 0.9867 | 3064 | 12 | 235.5302 |
+| beyin MR (Cheng) | gauss | 0.0500 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9909 | 0.9804 | 0.9970 | 3064 | 12 | 188.5892 |
+| beyin MR (Cheng) | gauss | 0.1000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9713 | 0.9516 | 0.9866 | 3064 | 12 | 188.9566 |
+| beyin MR (Cheng) | gauss | 0.1000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9871 | 0.9678 | 0.9971 | 3064 | 12 | 188.9603 |
+| beyin MR (Cheng) | gauss | 0.2000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9726 | 0.9572 | 0.9858 | 3064 | 12 | 189.2143 |
+| beyin MR (Cheng) | gauss | 0.2000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9878 | 0.9728 | 0.9962 | 3064 | 12 | 189.0418 |
+| beyin MR (Cheng) | gauss | 0.4000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9685 | 0.9498 | 0.9831 | 3064 | 12 | 189.4325 |
+| beyin MR (Cheng) | gauss | 0.4000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9862 | 0.9712 | 0.9956 | 3064 | 12 | 189.1322 |
+| beyin MR (Cheng) | bulanik | 2.0000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9786 | 0.9616 | 0.9908 | 3064 | 12 | 192.8624 |
+| beyin MR (Cheng) | bulanik | 2.0000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9936 | 0.9852 | 0.9983 | 3064 | 12 | 191.4789 |
+| beyin MR (Cheng) | bulanik | 4.0000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9784 | 0.9623 | 0.9905 | 3064 | 12 | 194.5580 |
+| beyin MR (Cheng) | bulanik | 4.0000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9933 | 0.9844 | 0.9982 | 3064 | 12 | 193.3005 |
+| beyin MR (Cheng) | bulanik | 8.0000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9744 | 0.9576 | 0.9862 | 3064 | 12 | 203.7974 |
+| beyin MR (Cheng) | bulanik | 8.0000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9939 | 0.9876 | 0.9977 | 3064 | 12 | 200.2004 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.0500 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9916 | 0.9902 | 0.9930 | 6788 | 5 | 179.3511 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.0500 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9961 | 0.9953 | 0.9969 | 6788 | 5 | 178.0656 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.1000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9893 | 0.9877 | 0.9907 | 6788 | 5 | 178.1467 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.1000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9954 | 0.9944 | 0.9962 | 6788 | 5 | 178.3250 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.2000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9864 | 0.9846 | 0.9880 | 6788 | 5 | 178.3690 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.2000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9946 | 0.9936 | 0.9956 | 6788 | 5 | 178.2065 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.4000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9834 | 0.9813 | 0.9852 | 6788 | 5 | 178.3797 |
+| akciğer grafisi (COVID-QU-Ex) | gauss | 0.4000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9932 | 0.9921 | 0.9944 | 6788 | 5 | 178.2970 |
+| akciğer grafisi (COVID-QU-Ex) | bulanik | 2.0000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9919 | 0.9905 | 0.9933 | 6788 | 5 | 180.7318 |
+| akciğer grafisi (COVID-QU-Ex) | bulanik | 2.0000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9958 | 0.9948 | 0.9967 | 6788 | 5 | 180.6566 |
+| akciğer grafisi (COVID-QU-Ex) | bulanik | 4.0000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9912 | 0.9897 | 0.9925 | 6788 | 5 | 182.4203 |
+| akciğer grafisi (COVID-QU-Ex) | bulanik | 4.0000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9956 | 0.9946 | 0.9964 | 6788 | 5 | 182.0647 |
+| akciğer grafisi (COVID-QU-Ex) | bulanik | 8.0000 | baglam | saldırgan: ROI gizli, bağlam bozuk | 0 | 0.9882 | 0.9866 | 0.9898 | 6788 | 5 | 188.5671 |
+| akciğer grafisi (COVID-QU-Ex) | bulanik | 8.0000 | tam | fayda: ROI temiz, bağlam bozuk | 0 | 0.9943 | 0.9932 | 0.9953 | 6788 | 5 | 188.1805 |
+
+
+### Adım 6 — birleşik özet: hız × doğruluk × sızıntı
+
+| veri | yontem | model | sifreli_deger | teshis_auc | teshis_auc_std | tohum_sayisi | saldirgan_auc | sure_s | hiz_kazanci | sizinti_turu |
+|---|---|---|---|---|---|---|---|---|---|---|
+| beyin MR (Cheng) | tam şifreleme | D2 | 262144 | 0.8819 |  | 1 | 0.5258 | 44.4573 | 1.0000 | yok |
+| beyin MR (Cheng) | Π_ROI (varsayılan ROI) | D2 | 262144 | 0.8819 |  | 1 | 0.9765 | 1.8341 | 24.2397 | açık pikseller + ROI meta verisi |
+| beyin MR (Cheng) | Π_ROI (gizlilik şartlı, saldırgan ≤ 0.8) | D2 | 262144 | 0.8819 |  | 1 | 0.8000 | 44.4514 | 1.0001 | sınırlı açık piksel |
+| beyin MR (Cheng) | FoveaHE F32_G16 | C | 1280 | 0.9505 |  | 1 | 0.5258 | 0.4766 | 21.3168 | yok |
+| beyin MR (Cheng) | FoveaHE F64_G32 | D | 5123 | 0.9468 |  | 1 | 0.5258 | 1.3974 | 31.8150 | yok |
+| beyin MR (Cheng) | şifreli özet (ImageNet ResNet-18) | D | 512 | 0.9558 |  | 1 | 0.5258 | 1.0101 | 44.0111 | yok |
+| beyin MR (Cheng) | bozuk bağlam (gauss 0.4) | D2 | 262144 | 0.8819 |  | 1 | 0.9685 | 1.8341 | 24.2397 | gürültülü/bulanık açık bağlam |
+| akciğer grafisi (COVID-QU-Ex) | tam şifreleme | D2 | 65536 | 0.9465 |  | 1 | 0.5027 | 10.3579 | 1.0000 | yok |
+| akciğer grafisi (COVID-QU-Ex) | Π_ROI (varsayılan ROI) | D2 | 65536 | 0.9465 |  | 1 | 0.9932 | 2.5648 | 4.0385 | açık pikseller + ROI meta verisi |
+| akciğer grafisi (COVID-QU-Ex) | Π_ROI (gizlilik şartlı, saldırgan ≤ 0.8) | D2 | 65536 | 0.9465 |  | 1 | 0.8000 | 10.3039 | 1.0052 | sınırlı açık piksel |
+| akciğer grafisi (COVID-QU-Ex) | FoveaHE F32_G16 | D2 | 1283 | 0.9517 |  | 1 | 0.5027 | 1.2990 | 7.9739 | yok |
+| akciğer grafisi (COVID-QU-Ex) | FoveaHE F64_G32 | D2 | 5123 | 0.9504 |  | 1 | 0.5027 | 1.4882 | 6.9599 | yok |
+| akciğer grafisi (COVID-QU-Ex) | şifreli özet (ImageNet ResNet-18) | D2 | 512 | 0.9812 |  | 1 | 0.5027 | 1.0601 | 9.7703 | yok |
+| akciğer grafisi (COVID-QU-Ex) | bozuk bağlam (gauss 0.4) | D2 | 65536 | 0.9465 |  | 1 | 0.9834 | 2.5648 | 4.0385 | gürültülü/bulanık açık bağlam |
+
+
+![](figures/cozum_pareto_brain.png)
+
+![](figures/cozum_pareto_covidqu.png)

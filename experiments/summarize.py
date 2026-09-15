@@ -101,6 +101,29 @@ def main():
             out.append("\n```json\n" + json.dumps(s, ensure_ascii=False, indent=2) + "\n```\n")
         out.append("\n![](figures/savunma_covidqu.png)\n\n![](figures/savunma_brain.png)\n")
 
+    # Çözüm adımlarının tabloları: sütunları yeniden türetmek yerine adım betiklerinin yazdığı markdown gömülür.
+    cozum = [("Adım 1 — bilgi kaybı: hangi temsil yetiyor?", ["cozum_bilgi.md"],
+              ["cozum_bilgi_egrisi.png", "cozum_temsil_ornek_brain.png", "cozum_temsil_ornek_covidqu.png"]),
+             ("Adım 2 — şifreli çalışabilen modeller (D, D2, C)", ["cozum_modeller.md"], []),
+             ("Adım 3 — şifreli doğruluk eşleşmesi ve maliyet", ["cozum_dogruluk_eslesme.md", "cozum_maliyet.md"], []),
+             ("Adım 4 — sızıntı denetimi: sunucunun gördüğü", ["cozum_sizinti.md"], []),
+             ("Adım 5a — rakip: şifreli özet (HETAL tarzı)", ["cozum_rakipler.md"], []),
+             ("Adım 5b — rakip: bozuk açık bağlam (Bi-CryptoNets tarzı)", ["saldiri_B_gurultu.md"], []),
+             ("Adım 6 — birleşik özet: hız × doğruluk × sızıntı", ["cozum_ozet.md"],
+              ["cozum_pareto_brain.png", "cozum_pareto_covidqu.png"])]
+    cozum = [(t, [m for m in f if (config.TABLES / m).exists()], [g for g in p if (config.FIGURES / g).exists()])
+             for t, f, p in cozum]
+    if any(f or p for _, f, p in cozum):
+        out.append("\n## Çözüm: Odaklı Tam Şifreleme (FoveaHE)\n")
+        out.append("\nSeçicilik şifrelemede değil çözünürlükte: istemci ROI merkezli, sabit boyutlu, çok çözünürlüklü "
+                   "bir temsil çıkarır ve tamamını şifreler; sunucuya açık piksel ya da değişken meta veri gitmez.\n")
+        for title, files, figs in cozum:
+            if not files and not figs:
+                continue
+            out.append(f"\n### {title}\n\n")
+            out += [(config.TABLES / m).read_text(encoding="utf-8") + "\n" for m in files]
+            out += [f"\n![](figures/{g})\n" for g in figs]
+
     (config.RESULTS / "OZET.md").write_text("".join(out), encoding="utf-8")
     print("".join(out))
 
