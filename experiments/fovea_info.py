@@ -4,12 +4,15 @@ Her yapılandırmada istemci temsili (`foveahe.representation`: odak F, yakın �
 odaklı görüntüye yeniden oluşturulur ve Saldırı B'nin ResNet-18 hattıyla eğitilir (gizli bölge yok). ResNet-18,
 temsilin taşıdığı teşhis bilgisinin şifresiz üst sınırıdır. Satırlar:
 - tam: aynı hattan tam görüntü (G = 224), referans
-- sabit: bilgisiz girdi; akıl sağlığı kontrolü, AUC tam 0.5 olmalı
+- tam_pencere: tam görüntü + odak penceresi göstergesi kanalı; ROI bilgisinin kendi katkısını ayıran ek referans
+- sabit: bilgisiz girdi; akıl sağlığı kontrolü (beyinde kat ortalaması AUC tam 0.5)
 - U{G}: tüm görüntünün eş örnekli küçültülmesi ("küçült ve tamamen şifrele": DCT-CryptoNets, privateST çizgisi)
 - F64: yalnız odak (bağlamın katkısı)
 - F{F}[_P{P}k{k}]_G{G}: odaklı temsil ızgarası (COZUM_PLANI §13.4)
-Ölçüt (COZUM_PLANI §6): aynı tohumlardaki tam ile fark ≤ 0.02 AUC. Her koşudan sonra satır CSV'ye yazılır; iş
-yarıda kalırsa aynı komut kaldığı yerden sürer.
+Ölçüt (COZUM_PLANI §6): aynı tohumlardaki tam ile fark ≤ 0.02 AUC. Beyinde ana AUC havuzlanmış kat dışı tahminlerden
+(Saldırı B ile aynı); kat ortalaması ayrıca raporlanır. Havuzlanmış AUC, katların sabit tahminleri farklı olduğundan
+bilgisiz girdide bile 0.5'ten biraz sapabilir. Her koşudan sonra satır CSV'ye yazılır; iş yarıda kalırsa aynı komut
+kaldığı yerden sürer.
 
 Çalıştırma: .venv\\Scripts\\python -m experiments.fovea_info [--dataset brain covidqu] [--configs ...] [--seeds 0]
             [--quick] [--build-only] [--plot-only]
@@ -51,8 +54,9 @@ def log(msg: str):
 def default_grid() -> list[FoveaSpec]:
     """Odaklı ızgara (F∈{64,32}, G∈{32,16}, P∈{0,32,16}, k∈{2,3}), eş örnekli küçültmeler (U128 iki ciphertext),
     yalnız odak. Referanslar ve karar için kilit satırlar önce koşar."""
-    first = [FoveaSpec.parse(n) for n in ("tam", "sabit", "F64_G32", "U64", "F64_P32k2_G32", "U90", "F32_G16", "U32",
-                                          "F64")]
+    # U{G}_pencere: eş örnekli küçültme + ROI penceresi kanalı; odaklamanın ROI bilgisinden bağımsız katkısını ayırır
+    first = [FoveaSpec.parse(n) for n in ("tam", "tam_pencere", "sabit", "F64_G32", "U64", "F64_P32k2_G32", "U90",
+                                          "U64_pencere", "U90_pencere", "F32_G16", "U32", "F64")]
     grid = []
     for f in (64, 32):
         for g in (32, 16):
@@ -62,9 +66,20 @@ def default_grid() -> list[FoveaSpec]:
     return first + [s for s in grid if s not in first]
 
 
+def fold_mean_auc(ds: Dataset, probs: np.ndarray) -> float:
+    """Beyin: tahmini olan her katta ayrı AUC, sonra ortalama."""
+    vals = []
+    for k in np.unique(ds.folds):
+        te = np.flatnonzero((ds.folds == k) & ~np.isnan(probs[:, 0]))
+        if len(te):
+            vals.append(auc_score(ds.y[te], probs[te]))
+    return float(np.mean(vals))
+
+
 def train_eval(ds: Dataset, cache: FoveaCache, spec: FoveaSpec, seed: int, epochs: int, quick: bool):
     t0 = time.perf_counter()
     n_cls = len(ds.labels)
+    fold_auc = np.nan
     if ds.name == "brain":
         folds = np.unique(ds.folds)
         probs = np.full((len(ds.y), n_cls), np.nan)
@@ -75,6 +90,7 @@ def train_eval(ds: Dataset, cache: FoveaCache, spec: FoveaSpec, seed: int, epoch
             probs[te] = p_fold
         te = np.flatnonzero(~np.isnan(probs[:, 0]))
         p, groups = probs[te], ds.groups[te]
+        fold_auc = fold_mean_auc(ds, probs)
     else:
         tr, te = ds.train_idx, ds.test_idx
         if quick:
@@ -89,7 +105,7 @@ def train_eval(ds: Dataset, cache: FoveaCache, spec: FoveaSpec, seed: int, epoch
     row = {"veri": ds.display, "yapilandirma": spec.name, "F": spec.focus, "P": spec.periphery,
            "k": spec.k if spec.periphery else np.nan, "G": spec.glob, "sifreli_deger": spec.n_values,
            "ciphertext": spec.n_ciphertexts, "tohum": seed, "epoch": epochs, "auc": auc, "ci95_alt": lo,
-           "ci95_ust": hi, "n": len(te), "sure_s": time.perf_counter() - t0}
+           "ci95_ust": hi, "n": len(te), "sure_s": time.perf_counter() - t0, "auc_kat_ort": fold_auc}
     if ds.name == "covidqu":
         for a, b in PAIRS:
             ia, ib = ds.labels.index(a), ds.labels.index(b)
@@ -97,6 +113,20 @@ def train_eval(ds: Dataset, cache: FoveaCache, spec: FoveaSpec, seed: int, epoch
             score = p[sel, ib] / (p[sel, ia] + p[sel, ib] + 1e-12)
             row[f"auc_{a}_vs_{b}"] = auc_score((yt[sel] == ib).astype(int), score)
     return row, probs
+
+
+def fill_fold_auc(df: pd.DataFrame, tag: str) -> pd.DataFrame:
+    """Kat ortalaması AUC'si eksik beyin satırlarını kayıtlı tahminlerden tamamlar."""
+    if "auc_kat_ort" not in df:
+        df["auc_kat_ort"] = np.nan
+    need = (df.veri == DISPLAY["brain"]) & df.auc_kat_ort.isna()
+    if need.any():
+        ds = load_dataset("brain")
+        for i in df.index[need]:
+            path = PREDS / f"fovea_brain_{df.at[i, 'yapilandirma']}_s{int(df.at[i, 'tohum'])}{tag}.npy"
+            if path.exists():
+                df.at[i, "auc_kat_ort"] = fold_mean_auc(ds, np.load(path))
+    return df
 
 
 def summarize(df: pd.DataFrame) -> pd.DataFrame:
@@ -108,23 +138,26 @@ def summarize(df: pd.DataFrame) -> pd.DataFrame:
         loss = float(np.mean(ref) - d.auc.mean()) if ref else np.nan
         spec = FoveaSpec.parse(name)
         single = len(d) == 1
+        fold = d.auc_kat_ort if "auc_kat_ort" in d else pd.Series(dtype=float)
         rows.append({"veri": veri, "yapilandirma": name, "sifreli_deger": spec.n_values,
                      "ciphertext": spec.n_ciphertexts, "tohum_sayisi": int(d.tohum.nunique()),
                      "auc_ort": float(d.auc.mean()), "auc_std": np.nan if single else float(d.auc.std(ddof=1)),
                      "ci95_alt": float(d.ci95_alt.iloc[0]) if single else np.nan,
-                     "ci95_ust": float(d.ci95_ust.iloc[0]) if single else np.nan, "tam_fark": loss,
+                     "ci95_ust": float(d.ci95_ust.iloc[0]) if single else np.nan,
+                     "auc_kat_ort": float(fold.mean()) if fold.notna().any() else np.nan, "tam_fark": loss,
                      "olcut": "-" if name in ("tam", "sabit") or np.isnan(loss)
                      else ("evet" if loss <= MAX_LOSS else "hayır")})
     return pd.DataFrame(rows).sort_values(["veri", "sifreli_deger"], kind="stable").reset_index(drop=True)
 
 
-def save_row(row: dict, out_csv):
+def save_row(row: dict, out_csv, tag: str):
     if out_csv.exists():
         df = pd.read_csv(out_csv)
         same = (df.veri == row["veri"]) & (df.yapilandirma == row["yapilandirma"]) & (df.tohum == row["tohum"])
         df = pd.concat([df[~same], pd.DataFrame([row])], ignore_index=True)
     else:
         df = pd.DataFrame([row])
+    df = fill_fold_auc(df, tag)
     df.to_csv(out_csv, index=False)
     write_markdown_table(summarize(df), out_csv.with_suffix(".md"), floatfmt="{:.4f}")
 
@@ -191,7 +224,7 @@ def plot_examples(ds: Dataset):
 
 
 def plot_curve(df: pd.DataFrame, tag: str = ""):
-    """Şifrelenen değer sayısı ↔ teşhis AUC; tam görüntü ve ölçüt sınırı referans çizgileri."""
+    """Şifrelenen değer sayısı ↔ teşhis AUC; tam görüntü, ölçüt sınırı ve tam + ROI penceresi referans çizgileri."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -206,15 +239,16 @@ def plot_curve(df: pd.DataFrame, tag: str = ""):
         _style(ax)
         d = s[(s.veri == veri) & (s.yapilandirma != "sabit")].copy()
         specs = d.yapilandirma.map(FoveaSpec.parse)
-        fov = d[specs.map(lambda x: x.uses_geometry and x.glob > 0)]
-        uni = d[specs.map(lambda x: not x.uses_geometry and x.glob != 224)].sort_values("sifreli_deger")
-        foc = d[specs.map(lambda x: x.uses_geometry and x.glob == 0)]
-        tam = d[d.yapilandirma == "tam"]
+        fov = d[specs.map(lambda x: x.focus > 0 and x.glob > 0)]
+        foc = d[specs.map(lambda x: x.focus > 0 and x.glob == 0)]
+        uni = d[specs.map(lambda x: not (x.focus or x.periphery or x.window) and x.glob != 224)]
+        uni = uni.sort_values("sifreli_deger")
         ax.grid(axis="y", color=INK["grid"], lw=0.5)
         ax.set_axisbelow(True)
         ax.axvline(SLOTS, color=INK["axis"], lw=0.7)
         ax.text(SLOTS * 1.03, 0.5, "1 ciphertext sınırı (8.192 slot)", transform=ax.get_xaxis_transform(),
                 rotation=90, ha="left", va="center", fontsize=7, color=INK["muted"])
+        tam = d[d.yapilandirma == "tam"]
         if len(tam):
             ref = float(tam.auc_ort.iloc[0])
             for y, text, color in ((ref, f"tam görüntü (224 px): {ref:.4f}", INK["secondary"]),
@@ -222,6 +256,12 @@ def plot_curve(df: pd.DataFrame, tag: str = ""):
                 ax.axhline(y, color=color, lw=0.8)
                 ax.text(0.01, y, text, transform=ax.get_yaxis_transform(), ha="left", va="bottom", fontsize=7,
                         color=color)
+        win = d[d.yapilandirma == "tam_pencere"]
+        if len(win):
+            y = float(win.auc_ort.iloc[0])
+            ax.axhline(y, color=INK["muted"], lw=0.8)
+            ax.text(0.99, y, f"tam görüntü + ROI penceresi: {y:.4f}", transform=ax.get_yaxis_transform(), ha="right",
+                    va="bottom", fontsize=7, color=INK["muted"])
         ring = dict(edgecolor=INK["surface"], linewidths=0.9, zorder=3)
         if len(uni):
             ax.plot(uni.sifreli_deger, uni.auc_ort, color=SERIES["es"], lw=1.0, zorder=2)
@@ -253,8 +293,7 @@ def plot_curve(df: pd.DataFrame, tag: str = ""):
                 ax.errorbar(err.sifreli_deger, err.auc_ort, yerr=err.auc_std, fmt="none", ecolor=INK["muted"],
                             elinewidth=0.7, zorder=1)
         ax.set_xscale("log", base=2)
-        ticks = [1024, 2048, 4096, 8192, 16384]
-        ax.xaxis.set_major_locator(FixedLocator(ticks))
+        ax.xaxis.set_major_locator(FixedLocator([1024, 2048, 4096, 8192, 16384]))
         ax.xaxis.set_minor_locator(NullLocator())
         ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{int(v):,}".replace(",", ".")))
         ax.set_xlim(800, 24000)
@@ -288,9 +327,10 @@ def run_dataset(name: str, specs, seeds, epochs: int, quick: bool, build_only: b
             ep = 1 if quick or spec.name == "sabit" else epochs
             row, probs = train_eval(ds, cache, spec, seed, ep, quick)
             np.save(PREDS / f"fovea_{name}_{spec.name}_s{seed}{tag}.npy", probs)
-            save_row(row, out_csv)
-            log(f"[{name}] {spec.name:15s} tohum={seed} değer={spec.n_values} AUC={row['auc']:.4f} "
-                f"(%95 GA {row['ci95_alt']:.4f}-{row['ci95_ust']:.4f}) {row['sure_s']:.0f} s")
+            save_row(row, out_csv, tag)
+            log(f"[{name}{tag}] {spec.name:15s} tohum={seed} değer={spec.n_values} AUC={row['auc']:.4f} "
+                f"(%95 GA {row['ci95_alt']:.4f}-{row['ci95_ust']:.4f}) kat ort={row['auc_kat_ort']:.4f} "
+                f"{row['sure_s']:.0f} s")
         del cache, layers
         torch.cuda.empty_cache()
 
@@ -316,7 +356,7 @@ def main():
             epochs = args.epochs_brain if name == "brain" else args.epochs_cxr
             run_dataset(name, specs, args.seeds, epochs, args.quick, args.build_only, out_csv, tag)
     if out_csv.exists():
-        df = pd.read_csv(out_csv)
+        df = fill_fold_auc(pd.read_csv(out_csv), tag)
         summary = summarize(df)
         write_markdown_table(summary, out_csv.with_suffix(".md"), floatfmt="{:.4f}")
         plot_curve(df, tag)

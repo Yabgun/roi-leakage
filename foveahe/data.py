@@ -8,6 +8,7 @@ tamamlanan anahtarları tutar; yarım kalan anahtar yeniden hesaplanır.
 from __future__ import annotations
 
 import json
+import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
@@ -18,8 +19,9 @@ import torch
 from PIL import Image
 
 import config
-from attacks.context_cnn import random_affine, server_view
-from foveahe.representation import MARGIN, MIN_SIDE, FoveaSpec, extract, parse_layer_key, render, roi_geometry
+from attacks.context_cnn import _MEAN, _STD, random_affine, server_view
+from foveahe.representation import (MARGIN, MIN_SIDE, FoveaSpec, extract, parse_layer_key, render, roi_geometry,
+                                    window_mask)
 
 STORE = config.DATA_PROC / "fovea"
 DISPLAY = {"brain": "beyin MR (Cheng)", "covidqu": "akciğer grafisi (COVID-QU-Ex)"}
@@ -36,6 +38,7 @@ class Dataset:
     groups: np.ndarray | None = None     # beyin: hasta kimliği (bootstrap)
     train_idx: np.ndarray | None = None  # COVID-QU-Ex: resmi Train + Val
     test_idx: np.ndarray | None = None   # COVID-QU-Ex: resmi Test
+    split: np.ndarray | None = None      # COVID-QU-Ex: satır başına resmi bölme (Train / Val / Test)
 
     @property
     def display(self) -> str:
@@ -57,7 +60,7 @@ def load_dataset(name: str) -> Dataset:
         return Dataset(name, man.label.map({l: i for i, l in enumerate(labels)}).to_numpy(), labels,
                        list(man.img_path), list(man.lung_mask_path),
                        train_idx=np.flatnonzero(man.split.isin(["Train", "Val"]).to_numpy()),
-                       test_idx=np.flatnonzero((man.split == "Test").to_numpy()))
+                       test_idx=np.flatnonzero((man.split == "Test").to_numpy()), split=man.split.to_numpy())
     raise ValueError(name)
 
 
@@ -127,7 +130,9 @@ def build_layers(ds: Dataset, keys, device: str = "cuda", chunk: int = 512, log=
         np.save(geom_path, geom)
     index["keys"] = sorted(set(index["keys"]) | set(missing))
     index["geom"] = True
-    (out / "index.json").write_text(json.dumps(index, indent=2), encoding="utf-8")
+    tmp = out / "index.json.tmp"  # atomik değiştirme: aynı önbelleği okuyan başka süreç yarım dosya görmesin
+    tmp.write_text(json.dumps(index, indent=2), encoding="utf-8")
+    os.replace(tmp, out / "index.json")
     log(f"[fovea:{ds.name}] {len(missing)} katman hazır: {' '.join(missing)} ({time.perf_counter() - t0:.0f} s)")
 
 
@@ -144,7 +149,8 @@ class FoveaCache:
     """`attacks.context_cnn.CpuCache` ile aynı arayüz; `train_and_predict` doğrudan kullanır.
 
     Katmanlar CPU'da uint8 tutulur, her yığın GPU'da 224×224 odaklı görüntüye çevrilir. Gizli bölge yoktur
-    (sunucu görüşü "tam"); artırma yeniden oluşturulmuş görüntüye uygulanır.
+    (sunucu görüşü "tam"); artırma yeniden oluşturulmuş görüntüye uygulanır. `spec.window` referansında üçüncü kanal
+    odak penceresi göstergesidir (Saldırı B'deki gizli bölge kanalıyla aynı normalizasyon).
     """
 
     def __init__(self, layers: dict, geom: np.ndarray, labels: np.ndarray, spec: FoveaSpec, device: str = "cuda",
@@ -156,20 +162,28 @@ class FoveaCache:
         self._buf = {k: torch.empty((max_batch, *t.shape[1:]), dtype=torch.uint8).pin_memory()
                      for k, t in self.layers.items()}
 
-    def images(self, idx) -> torch.Tensor:
-        """(n,1,out,out) odaklı görüntü, [0,1], artırmasız."""
+    def _to_device(self, idx):
         idx_t = torch.from_numpy(np.asarray(idx, dtype=np.int64))
         n = len(idx_t)
         lay = {}
         for k, t in self.layers.items():
             torch.index_select(t, 0, idx_t, out=self._buf[k][:n])
             lay[k] = self._buf[k][:n].to(self.device, non_blocking=True).float().div_(255).unsqueeze(1)
-        return render(lay, self.geom[idx_t].to(self.device, non_blocking=True), self.spec, self.out)
+        return idx_t, lay, self.geom[idx_t].to(self.device, non_blocking=True)
+
+    def images(self, idx) -> torch.Tensor:
+        """(n,1,out,out) odaklı görüntü, [0,1], artırmasız."""
+        _, lay, geom = self._to_device(idx)
+        return render(lay, geom, self.spec, self.out)
 
     def batch(self, idx, view: str = "tam", train: bool = False, extra_hidden_fn=None):
-        x = self.images(idx)
-        m = torch.zeros_like(x, dtype=torch.bool)
+        idx_t, lay, geom = self._to_device(idx)
+        x = render(lay, geom, self.spec, self.out)
+        m = window_mask(geom, 1.0, self.out) if self.spec.window else torch.zeros_like(x, dtype=torch.bool)
         if train:
             x, m = random_affine(x, m)
-        y = self.y[torch.from_numpy(np.asarray(idx, dtype=np.int64))]
-        return server_view(x, m, "tam"), y.to(self.device, non_blocking=True)
+        y = self.y[idx_t].to(self.device, non_blocking=True)
+        if not self.spec.window:
+            return server_view(x, m, "tam"), y
+        z = torch.cat([x, x, m.float()], dim=1)
+        return (z - _MEAN.to(z.device)) / _STD.to(z.device), y

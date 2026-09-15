@@ -15,7 +15,7 @@ katmandan (en küçük örnek aralığı) bilineer olarak doldurulur. Çıktı t
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import torch
 import torch.nn.functional as F
@@ -29,11 +29,20 @@ SLOTS = 8192       # CKKS N = 16384: ciphertext başına slot
 
 @dataclass(frozen=True)
 class FoveaSpec:
-    """Katman boyutları; 0 katmanın olmadığını gösterir. Odak ve yakın çevre yoksa eş örnekli küçültmedir."""
+    """Katman boyutları; 0 katmanın olmadığını gösterir. Odak ve yakın çevre yoksa eş örnekli küçültmedir.
+
+    window: yalnızca genel bakış yapılandırmalarında; ResNet referansına odak penceresi göstergesi ayrı kanal olarak
+    eklenir (ROI bilgisinin kendi katkısını ayırmak için). Geometri değerleri sayılır.
+    """
     focus: int = 0
     periphery: int = 0
     k: float = 2.0
     glob: int = 0
+    window: bool = False
+
+    def __post_init__(self):
+        if self.window and (self.focus or self.periphery):
+            raise ValueError("window yalnızca genel bakış yapılandırmalarında kullanılır")
 
     @property
     def focus_key(self) -> str:
@@ -49,7 +58,7 @@ class FoveaSpec:
 
     @property
     def uses_geometry(self) -> bool:
-        return bool(self.focus or self.periphery)
+        return bool(self.focus or self.periphery or self.window)
 
     @property
     def layer_keys(self) -> list[str]:
@@ -73,8 +82,9 @@ class FoveaSpec:
     def name(self) -> str:
         if not self.layer_keys:
             return "sabit"
-        if not self.uses_geometry:
-            return "tam" if self.glob == 224 else f"U{self.glob}"
+        if not (self.focus or self.periphery):
+            base = "tam" if self.glob == 224 else f"U{self.glob}"
+            return base + ("_pencere" if self.window else "")
         parts = [f"F{self.focus}"] if self.focus else []
         if self.periphery:
             parts.append(f"P{self.periphery}k{self.k:g}")
@@ -84,6 +94,8 @@ class FoveaSpec:
 
     @staticmethod
     def parse(name: str) -> "FoveaSpec":
+        if name.endswith("_pencere"):
+            return replace(FoveaSpec.parse(name[:-len("_pencere")]), window=True)
         if name == "sabit":
             return FoveaSpec()
         if name == "tam":
@@ -163,14 +175,24 @@ def vectorize(layers: dict[str, torch.Tensor], geom: torch.Tensor, spec: FoveaSp
     return torch.cat(parts, dim=1)
 
 
+def _window_coords(geom: torch.Tensor, scale: float, out: int, dtype=torch.float32):
+    """Tuval piksel merkezlerinin pencere koordinatları (0..1 pencere içi): (N,out) x ve (N,out) y."""
+    u = (torch.arange(out, device=geom.device, dtype=dtype) + 0.5) / out
+    g = geom.to(dtype)
+    side = g[:, 2:3] * scale
+    return (u[None, :] - (g[:, 0:1] - side / 2)) / side, (u[None, :] - (g[:, 1:2] - side / 2)) / side
+
+
+def window_mask(geom: torch.Tensor, scale: float = 1.0, out: int = 224) -> torch.Tensor:
+    """(N,1,out,out) bool: tuval pikselinin merkezi (kenar × scale) penceresinin içinde mi."""
+    px, py = _window_coords(geom, scale, out)
+    return ((px >= 0) & (px <= 1))[:, None, None, :] & ((py >= 0) & (py <= 1))[:, None, :, None]
+
+
 def _window_canvas(patch: torch.Tensor, geom: torch.Tensor, scale: float, out: int):
     """Pencere katmanını out×out tuvale örnekler. Döner (değer, pencere içi maskesi), ikisi de (N,1,out,out)."""
     n = patch.shape[0]
-    u = (torch.arange(out, device=patch.device, dtype=patch.dtype) + 0.5) / out
-    g = geom.to(patch.dtype)
-    side = g[:, 2:3] * scale
-    px = (u[None, :] - (g[:, 0:1] - side / 2)) / side
-    py = (u[None, :] - (g[:, 1:2] - side / 2)) / side
+    px, py = _window_coords(geom, scale, out, patch.dtype)
     grid = torch.stack([(2 * px - 1)[:, None, :].expand(n, out, out),
                         (2 * py - 1)[:, :, None].expand(n, out, out)], dim=-1)
     values = F.grid_sample(patch, grid, mode="bilinear", padding_mode="border", align_corners=False)
@@ -235,17 +257,19 @@ def _selftest():
     small = torch.rand(2, 1, 64, 64, device=dev)
     assert torch.allclose(extract(small, geom[:2], "g16"), F.avg_pool2d(small, 4), atol=1e-6)
 
-    # 5) Render: G = 224 kimlik; odak doğru yere ve yalnızca penceresine yapıştırılır
+    # 5) Render: G = 224 kimlik; odak doğru yere ve yalnızca penceresine yapıştırılır; pencere maskesi tutarlı
     g224 = torch.rand(4, 1, 224, 224, device=dev)
     assert torch.equal(render({"g224": g224}, geom, FoveaSpec(glob=224)), g224)
     spec = FoveaSpec(focus=64, glob=16)
     canvas = render({"f64": torch.ones(4, 1, 64, 64, device=dev), "g16": torch.zeros(4, 1, 16, 16, device=dev)},
                     geom, spec)
     u = (torch.arange(224, device=dev) + 0.5) / 224
+    wmask = window_mask(geom)
     for i in range(4):
         x0, y0, s = geom[i, 0] - geom[i, 2] / 2, geom[i, 1] - geom[i, 2] / 2, geom[i, 2]
         inside = (((u >= y0) & (u <= y0 + s))[:, None] & ((u >= x0) & (u <= x0 + s))[None, :])
         assert torch.equal(canvas[i, 0] > 0.5, inside), i
+        assert torch.equal(wmask[i, 0], inside), i
 
     # 6) Doğrusal eğim görüntüsü: odak içinde yeniden oluşturma eğimi korur
     ramp = ((torch.arange(h, device=dev) + 0.5) / h).view(1, 1, 1, h).expand(4, 1, h, h).contiguous()
@@ -258,9 +282,10 @@ def _selftest():
     err = (canvas[0, 0][rows][:, cols] - u[cols][None, :]).abs().max()
     assert err < 2e-3, err
 
-    # 7) Adlar ve ayrıştırma
-    for name in ["tam", "sabit", "U64", "F64", "F32_G16", "F64_P32k2_G32", "F64_P16k3_G16"]:
+    # 7) Adlar, ayrıştırma ve değer sayıları
+    for name in ["tam", "tam_pencere", "sabit", "U64", "F64", "F32_G16", "F64_P32k2_G32", "F64_P16k3_G16"]:
         assert FoveaSpec.parse(name).name == name, name
+    assert FoveaSpec.parse("tam_pencere").n_values == 224 ** 2 + GEOM_VALUES
     print("foveahe.representation öz sınama: tamam", f"(cihaz={dev})")
 
 
