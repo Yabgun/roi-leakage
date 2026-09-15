@@ -1,0 +1,10 @@
+.venv/
+data/
+__pycache__/
+*.pyc
+results/logs/
+results/checkpoints/
+results/preds/
+*.pt
+*.pth
+*.bin

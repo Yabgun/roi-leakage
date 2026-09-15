@@ -1,0 +1,51 @@
+{
+  "yon_tumor_tablosu": {
+    "glioma": {
+      "aksiyel": 610,
+      "koronal": 470,
+      "sagital": 346
+    },
+    "meningioma": {
+      "aksiyel": 241,
+      "koronal": 243,
+      "sagital": 224
+    },
+    "pituitary": {
+      "aksiyel": 275,
+      "koronal": 256,
+      "sagital": 399
+    }
+  },
+  "yalniz_yon_auc": 0.5404450682991035,
+  "yalniz_meta_auc": 0.8298600870754648,
+  "yon_arti_meta_auc": 0.8576910645238026,
+  "yon_icinde": {
+    "aksiyel": {
+      "n": 1126,
+      "siniflar": {
+        "meningioma": 241,
+        "glioma": 610,
+        "pituitary": 275
+      },
+      "meta_veri_auc": 0.8412131204547553
+    },
+    "koronal": {
+      "n": 969,
+      "siniflar": {
+        "meningioma": 243,
+        "glioma": 470,
+        "pituitary": 256
+      },
+      "meta_veri_auc": 0.8474403834121529
+    },
+    "sagital": {
+      "n": 969,
+      "siniflar": {
+        "meningioma": 224,
+        "glioma": 346,
+        "pituitary": 399
+      },
+      "meta_veri_auc": 0.8905711110666141
+    }
+  }
+}

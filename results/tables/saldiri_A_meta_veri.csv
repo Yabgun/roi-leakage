@@ -1,0 +1,25 @@
+veri,hedef,roi,oznitelik_grubu,auc_ort,auc_std,ci95_alt,ci95_ust,n,hasta_bazli_kat
+akciğer grafisi (COVID-QU-Ex),teşhis (3 sınıf),akciğer maskesi,konum,0.7286386592495269,0.0008207499737886,0.7202623247487465,0.7386166527182149,6788,False
+akciğer grafisi (COVID-QU-Ex),teşhis (3 sınıf),akciğer maskesi,buyukluk,0.7649507927244101,0.0011139215139841,0.7568843741815715,0.7752700284773751,6788,False
+akciğer grafisi (COVID-QU-Ex),teşhis (3 sınıf),akciğer maskesi,sekil,0.7801774187301314,0.0004345125159683,0.7713468119579826,0.7884184051631734,6788,False
+akciğer grafisi (COVID-QU-Ex),teşhis (3 sınıf),akciğer maskesi,tumu,0.8336520742428075,0.0002983905008758,0.8265238457638566,0.8412458039374302,6788,False
+akciğer grafisi (COVID-QU-Ex),Normal / Non-COVID,akciğer maskesi,konum,0.7877981590485791,0.0014621137346155,0.7719619856815645,0.7979173351701918,4393,False
+akciğer grafisi (COVID-QU-Ex),Normal / Non-COVID,akciğer maskesi,buyukluk,0.8236445487014199,0.0011990073972813,0.8123107835558382,0.8370506438846829,4393,False
+akciğer grafisi (COVID-QU-Ex),Normal / Non-COVID,akciğer maskesi,sekil,0.8732806724989732,0.0011774026718493,0.8624880747530979,0.8834341343323168,4393,False
+akciğer grafisi (COVID-QU-Ex),Normal / Non-COVID,akciğer maskesi,tumu,0.9044255841640014,0.0010786068145769,0.8947182229750528,0.9125549739484008,4393,False
+akciğer grafisi (COVID-QU-Ex),Normal / COVID-19,akciğer maskesi,konum,0.7794907029832399,0.0018280667287632,0.7650575900772053,0.7909987686946001,4535,False
+akciğer grafisi (COVID-QU-Ex),Normal / COVID-19,akciğer maskesi,buyukluk,0.7773303611495912,0.0017251467077919,0.7667941030258419,0.7925653723650593,4535,False
+akciğer grafisi (COVID-QU-Ex),Normal / COVID-19,akciğer maskesi,sekil,0.7902040270813415,0.001710164520123,0.7799359425134436,0.8033236462938597,4535,False
+akciğer grafisi (COVID-QU-Ex),Normal / COVID-19,akciğer maskesi,tumu,0.8529410180867462,0.0012101822545121,0.8420856570707633,0.8630858936815987,4535,False
+akciğer grafisi (COVID-QU-Ex),Non-COVID / COVID-19,akciğer maskesi,konum,0.6939442005880354,0.001187035512144,0.6798450181156412,0.7081947510085335,4648,False
+akciğer grafisi (COVID-QU-Ex),Non-COVID / COVID-19,akciğer maskesi,buyukluk,0.7808485461741107,0.0014256938091811,0.765652505604876,0.7921710284102202,4648,False
+akciğer grafisi (COVID-QU-Ex),Non-COVID / COVID-19,akciğer maskesi,sekil,0.7832694055803118,0.0016145775988214,0.7703343709783276,0.7950645867995509,4648,False
+akciğer grafisi (COVID-QU-Ex),Non-COVID / COVID-19,akciğer maskesi,tumu,0.83217826011618,0.0010556632242757,0.819867914079728,0.8419863450908252,4648,False
+"akciğer grafisi (COVID-QU-Ex, enfeksiyon alt kümesi)",COVID-19 / diğer,enfeksiyon (lezyon) maskesi,yalnızca ROI alanı,1.0,0.0,,,5826,False
+"akciğer grafisi (Kaggle, orijinal çözünürlük)",NORMAL / PNEUMONIA,(ROI'den bağımsız),girdi_boyutu,0.9338240448650544,0.0,,,1172,False
+"akciğer grafisi (Kaggle, orijinal çözünürlük)",NORMAL / COVID19,(ROI'den bağımsız),girdi_boyutu,0.9203877950614598,0.0,,,433,False
+beyin MR (Cheng),tümör tipi (3 sınıf),tümör maskesi,girdi_boyutu,0.4573745616476946,0.0,0.4011623022785018,0.5186482029814391,3064,True
+beyin MR (Cheng),tümör tipi (3 sınıf),tümör maskesi,konum,0.7753099677792861,0.0,0.743032991241373,0.8036644064839263,3064,True
+beyin MR (Cheng),tümör tipi (3 sınıf),tümör maskesi,buyukluk,0.7082139881312184,0.0,0.6742476178128365,0.736121845799828,3064,True
+beyin MR (Cheng),tümör tipi (3 sınıf),tümör maskesi,sekil,0.7215363594977307,0.0,0.690847487160764,0.7474471267969923,3064,True
+beyin MR (Cheng),tümör tipi (3 sınıf),tümör maskesi,tumu,0.8298600870754648,0.0,0.8009955299681099,0.8552678283059877,3064,True

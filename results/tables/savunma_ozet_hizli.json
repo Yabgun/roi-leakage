@@ -1,0 +1,16 @@
+{
+  "brain": {
+    "AUC<=0.8 icin min gizli alan (sizinti_gudumlu)": null,
+    "AUC<=0.7 icin min gizli alan (sizinti_gudumlu)": null,
+    "AUC<=0.6 icin min gizli alan (sizinti_gudumlu)": null,
+    "goruntu_roi AUC": 0.9352226126905391,
+    "kanonik AUC": 0.8657582246353012
+  },
+  "covidqu": {
+    "AUC<=0.8 icin min gizli alan (sizinti_gudumlu)": null,
+    "AUC<=0.7 icin min gizli alan (sizinti_gudumlu)": null,
+    "AUC<=0.6 icin min gizli alan (sizinti_gudumlu)": null,
+    "goruntu_roi AUC": 0.9602221736110584,
+    "kanonik AUC": 0.9217261246264973
+  }
+}

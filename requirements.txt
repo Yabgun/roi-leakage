@@ -1,0 +1,10 @@
+﻿# CUDA'li torch/torchvision icin once: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+h5py==3.16.0
+matplotlib==3.11.2
+numpy==2.5.2
+pandas==3.0.5
+pillow==12.3.0
+scikit-learn==1.9.1
+scipy==1.18.1
+tenseal==0.3.16
+tqdm==4.70.1
