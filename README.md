@@ -1,6 +1,6 @@
 # roi-leakage
 
-ROI-seçici homomorfik şifrelemeye karşı sızıntı istismarı saldırıları. Lisans tezi deney kodu; plan için `../TEZ_PLANI_v3.md`.
+ROI-seçici homomorfik şifrelemeye karşı sızıntı istismarı saldırıları ve sızıntısız çözüm (FoveaHE, odaklı tam şifreleme). Lisans tezi deney kodu; plan için `../TEZ_PLANI_v3.md` (saldırı) ve `../COZUM_PLANI.md` (çözüm).
 
 ## Kurulum (Windows, Python 3.13)
 
@@ -17,10 +17,11 @@ Tüm deneyler proje kökünden çalıştırılır: `.venv\Scripts\python -m expe
 | Klasör | İçerik |
 |---|---|
 | `data/raw/` | İndirilen ham veriler (git dışı): `kaggle_cxr`, `covid_qu_ex`, `brain_tumor_figshare`, `stroke` |
-| `data/processed/` | Hazırlanmış manifestolar, bölmeler, önbellek |
+| `data/processed/` | Hazırlanmış manifestolar, bölmeler, önbellek (FoveaHE katmanları: `fovea/`) |
 | `he/` | Π_ROI'nin TenSEAL ile yeniden üretimi |
 | `attacks/` | Meta veri, bağlam ve inpainting saldırıları |
 | `defenses/` | Sabit ROI, sızıntı-güdümlü genişletme |
+| `foveahe/` | Çözüm: odaklı temsil (`representation.py`), katman önbelleği (`data.py`), şifreli çalışabilen modeller (`he_models.py`), şifreli çıkarım (`he_infer.py`) |
 | `analysis/` | Isı haritaları, önişleme ablasyonu, şekiller |
 | `experiments/` | Tek komutla çalışan deney betikleri |
 | `results/` | Tablolar (`tables/`), şekiller (`figures/`), günlükler (`logs/`) |
@@ -41,5 +42,10 @@ Tüm deneyler proje kökünden çalıştırılır: `.venv\Scripts\python -m expe
 | 6c | Gerçekçilik testi (başka kaynaktan saldırgan) | `python -m experiments.attack_context_transfer` | `results/tables/saldiri_B_transfer.csv` |
 | 7 | Kök neden (Grad-CAM, önişleme) | `python -m experiments.root_cause` | `results/tables/kok_neden_*.csv`, `results/figures/kok_neden_gradcam_*.png` |
 | 8 | Savunma ve gerçek bedel | `python -m experiments.defense_expansion` | `results/tables/savunma*.csv`, `results/figures/savunma_*.png` |
+| Ç0 | FoveaHE temsil öz sınaması | `python -m foveahe.representation` | (konsol) |
+| Ç1 | Çözüm Adım 1: odaklı temsil teşhis bilgisini koruyor mu (ResNet-18 üst sınır; tam, eş örnekli ve ROI penceresi referansları) | `python -m experiments.fovea_info` (kuyruk: `experiments\run_fovea_step1.ps1`) | `results/tables/cozum_bilgi.csv|md`, `results/figures/cozum_bilgi_egrisi.png`, `results/figures/cozum_temsil_ornek_*.png` |
+| Ç2 | Çözüm Adım 2: şifreli çalışabilen modeller (D: Π_ROI sınıfı, D2: kare aktivasyon), tam görüntüyle adil karşılaştırma | `python -m experiments.fovea_models` (kuyruk: `experiments\run_fovea_step2_cpu.ps1`) | `results/tables/cozum_modeller.csv|md` |
+| Ç3 | Çözüm Adım 3: gerçekten şifreli çıkarım, doğruluk eşleşmesi, maliyet dökümü (makine boşken) | `python -m experiments.fovea_cost` | `results/tables/cozum_dogruluk_eslesme.csv|md`, `results/tables/cozum_maliyet.csv|md` |
+| Ç4 | Çözüm Adım 4: sızıntı denetimi (paket meta verisi, yan kanal; Π_ROI pozitif kontrol) | `python -m experiments.fovea_leakage` | `results/tables/cozum_sizinti.csv|md` |
 
 Not: RTX 2070 + cuDNN 9.10'da `channels_last` bellek düzeni eğitimi ~7.5 kat yavaşlattığı için kullanılmıyor (ölçüm: 529 ms/adım yerine 71 ms/adım).

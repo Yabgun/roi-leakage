@@ -1,0 +1,6 @@
+veri,yontem,saldiri,oznitelikler,n,auc_kat_ort,auc_std,auc_havuz,bos_p95,p_degeri,sans_duzeyinde
+beyin MR (Cheng),Π_ROI,A: paket meta verisi,"ciphertext sayısı, yükleme boyutu",60,0.5,0.0,0.5,0.5,1.0,evet
+beyin MR (Cheng),FoveaHE,A: paket meta verisi,"ciphertext sayısı, slot sayısı, yükleme baytı",60,0.46875,0.0,0.4479166666666667,0.5628216790925125,0.6666666666666666,evet
+beyin MR (Cheng),Π_ROI,yan kanal (alt küme),"ciphertext sayısı, yükleme boyutu (süre bunlarla doğrusal)",24,0.5,0.0,0.3880208333333333,0.5,1.0,evet
+beyin MR (Cheng),FoveaHE,yan kanal (alt küme),"sunucu süresi, indirme baytı",24,0.5,0.0,0.3880208333333333,0.5,1.0,evet
+beyin MR (Cheng),FoveaHE,yan kanal (alt küme),yalnızca sunucu süresi,24,0.5,0.0,0.3880208333333333,0.5,1.0,evet
