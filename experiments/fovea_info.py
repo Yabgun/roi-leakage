@@ -172,15 +172,21 @@ def _style(ax):
     ax.tick_params(colors=INK["muted"], labelcolor=INK["secondary"], labelsize=8, width=0.6)
 
 
-def plot_examples(ds: Dataset):
-    """Her sınıftan bir görüntü: tam görüntü, katmanlar ve yeniden oluşturulmuş görüntüler."""
+def plot_examples(ds: Dataset, tez: bool = False):
+    """Her sınıftan bir görüntü: tam görüntü, katmanlar ve yeniden oluşturulmuş görüntüler.
+
+    tez: ana yapılandırma F64_G32 (yakın çevre katmanı yok), büyük yazı, şekil içi başlık yok, Türkçe sınıf adları;
+    çıktı `cozum_temsil_ornek_{veri}_tez.png|pdf`.
+    """
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle
+    from common.tez_bicim import SINIF_TEZ, kaydet, sayi
 
     plt.rcParams["font.family"] = ["Segoe UI", "DejaVu Sans"]
-    fovea, uniform = FoveaSpec(focus=64, periphery=32, k=2, glob=32), FoveaSpec(glob=64)
+    fovea = FoveaSpec(focus=64, glob=32) if tez else FoveaSpec(focus=64, periphery=32, k=2, glob=32)
+    uniform = FoveaSpec(glob=64)
     layers, geom = load_layers(ds, ["g224", *fovea.layer_keys, uniform.glob_key], mmap=True, log=log)
     rng = np.random.default_rng(0)
     pick = np.array([rng.choice(np.flatnonzero(ds.y == c)) for c in range(len(ds.labels))])
@@ -189,14 +195,19 @@ def plot_examples(ds: Dataset):
         return torch.from_numpy(np.asarray(layers[key][pick], dtype=np.float32) / 255).unsqueeze(1)
 
     g = torch.from_numpy(geom[pick])
-    columns = [("tam görüntü (224 px)", layer("g224")), (f"odak {fovea.focus}×{fovea.focus}", layer(fovea.focus_key)),
-               (f"yakın çevre {fovea.periphery}×{fovea.periphery}, k={fovea.k:g}", layer(fovea.periphery_key)),
-               (f"genel bakış {fovea.glob}×{fovea.glob}", layer(fovea.glob_key)),
-               (f"FoveaHE: {fovea.n_values:,} değer".replace(",", "."),
-                render({k: layer(k) for k in fovea.layer_keys}, g, fovea)),
-               (f"eş örnekli U{uniform.glob}: {uniform.n_values:,} değer".replace(",", "."),
-                render({uniform.glob_key: layer(uniform.glob_key)}, g, uniform))]
-    fig, axes = plt.subplots(len(pick), len(columns), figsize=(2.05 * len(columns), 2.2 * len(pick)), squeeze=False)
+    columns = [("tam görüntü (224 px)", layer("g224")), (f"odak {fovea.focus}×{fovea.focus}", layer(fovea.focus_key))]
+    if fovea.periphery:
+        columns.append((f"yakın çevre {fovea.periphery}×{fovea.periphery}, k={fovea.k:g}", layer(fovea.periphery_key)))
+    fmt = sayi if tez else (lambda n: f"{n:,}".replace(",", "."))
+    columns += [(f"genel bakış {fovea.glob}×{fovea.glob}", layer(fovea.glob_key)),
+                (f"FoveaHE {fovea.name}:\n{fmt(fovea.n_values)} değer" if tez else f"FoveaHE: {fmt(fovea.n_values)} değer",
+                 render({k: layer(k) for k in fovea.layer_keys}, g, fovea)),
+                (f"eş örnekli U{uniform.glob}:\n{fmt(uniform.n_values)} değer" if tez
+                 else f"eş örnekli U{uniform.glob}: {fmt(uniform.n_values)} değer",
+                 render({uniform.glob_key: layer(uniform.glob_key)}, g, uniform))]
+    fontsize = 11 if tez else 8
+    fig, axes = plt.subplots(len(pick), len(columns), figsize=(2.3 * len(columns), 2.4 * len(pick)) if tez
+                             else (2.05 * len(columns), 2.2 * len(pick)), squeeze=False)
     fig.patch.set_facecolor(INK["surface"])
     for r, i in enumerate(pick):
         for c, (title, images) in enumerate(columns):
@@ -208,18 +219,25 @@ def plot_examples(ds: Dataset):
                 sp.set_color(INK["axis"])
                 sp.set_linewidth(0.6)
             if r == 0:
-                ax.set_title(title, fontsize=8, color=INK["primary"])
+                ax.set_title(title, fontsize=fontsize, color=INK["primary"])
             if c == 0:
-                ax.set_ylabel(ds.labels[ds.y[i]], fontsize=8, color=INK["secondary"])
+                label = ds.labels[ds.y[i]]
+                ax.set_ylabel(SINIF_TEZ.get(label, label) if tez else label, fontsize=fontsize,
+                              color=INK["secondary"])
                 cx, cy, side = geom[i] * 224
-                for scale, width in ((fovea.k, 0.8), (1.0, 1.3)):
+                scales = ((1.0, 1.3),) if not fovea.periphery else ((fovea.k, 0.8), (1.0, 1.3))
+                for scale, width in scales:
                     s = side * scale
                     ax.add_patch(Rectangle((cx - s / 2 - 0.5, cy - s / 2 - 0.5), s, s, fill=False, lw=width,
                                            ec=SERIES["odak"]))
-    fig.suptitle(f"Odaklı temsil örnekleri, {ds.display} (ilk sütun: iç kare odak, dış kare yakın çevre penceresi)",
-                 fontsize=9, color=INK["primary"])
-    fig.tight_layout()
-    fig.savefig(config.FIGURES / f"cozum_temsil_ornek_{ds.name}.png", dpi=160, facecolor=INK["surface"])
+    if tez:
+        fig.tight_layout()
+        kaydet(fig, config.FIGURES / f"cozum_temsil_ornek_{ds.name}_tez.png", dpi=170, facecolor=INK["surface"])
+    else:
+        fig.suptitle(f"Odaklı temsil örnekleri, {ds.display} (ilk sütun: iç kare odak, dış kare yakın çevre penceresi)",
+                     fontsize=9, color=INK["primary"])
+        fig.tight_layout()
+        fig.savefig(config.FIGURES / f"cozum_temsil_ornek_{ds.name}.png", dpi=160, facecolor=INK["surface"])
     plt.close(fig)
 
 
@@ -252,8 +270,8 @@ def plot_curve(df: pd.DataFrame, tag: str = "", stacked: bool = False):
         ax.set_axisbelow(True)
         ax.axvline(SLOTS, color=INK["axis"], lw=0.7)
         # eksenin üstünde: veri etiketleriyle (ör. U90) çakışmasın
-        ax.text(SLOTS, 1.01, "1 ciphertext (8.192 slot)", transform=ax.get_xaxis_transform(), ha="center",
-                va="bottom", fontsize=7, color=INK["muted"])
+        ax.text(SLOTS, 1.01, "1 şifreli metin (8192 slot)" if stacked else "1 ciphertext (8.192 slot)",
+                transform=ax.get_xaxis_transform(), ha="center", va="bottom", fontsize=7, color=INK["muted"])
         vals = d.auc_ort.to_numpy()
         lo, hi = float(vals.min()), float(vals.max())
         pad = max(5e-4, 0.12 * (hi - lo))
@@ -319,15 +337,18 @@ def plot_curve(df: pd.DataFrame, tag: str = "", stacked: bool = False):
         ax.set_xscale("log", base=2)
         ax.xaxis.set_major_locator(FixedLocator([1024, 2048, 4096, 8192, 16384]))
         ax.xaxis.set_minor_locator(NullLocator())
-        ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{int(v):,}".replace(",", ".")))
+        from common.tez_bicim import VERI_TEZ, kaydet, sayi
+        ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: sayi(v) if stacked else f"{int(v):,}".replace(",", ".")))
         ax.set_xlim(800, 24000)
         ax.set_xlabel("şifrelenen değer sayısı (log ölçek)", fontsize=8, color=INK["secondary"])
         ax.set_ylabel("teşhis AUC (makro, ResNet-18 üst sınır)", fontsize=8, color=INK["secondary"])
-        ax.set_title(veri, loc="left", fontsize=9, color=INK["primary"])
+        ax.set_title(VERI_TEZ.get(veri, veri) if stacked else veri, loc="left", fontsize=9, color=INK["primary"])
         ax.legend(loc="lower right", fontsize=7, frameon=False, labelcolor=INK["secondary"])
     fig.tight_layout()
-    fig.savefig(config.FIGURES / f"cozum_bilgi_egrisi{tag}{'_tez' if stacked else ''}.png", dpi=160,
-                facecolor=INK["surface"])
+    if stacked:
+        kaydet(fig, config.FIGURES / f"cozum_bilgi_egrisi{tag}_tez.png", dpi=200, facecolor=INK["surface"])
+    else:
+        fig.savefig(config.FIGURES / f"cozum_bilgi_egrisi{tag}.png", dpi=160, facecolor=INK["surface"])
     plt.close(fig)
 
 
@@ -371,7 +392,11 @@ def main():
     ap.add_argument("--build-only", action="store_true", help="yalnızca katman önbelleği ve örnek şekilleri")
     ap.add_argument("--plot-only", action="store_true")
     ap.add_argument("--tez", action="store_true", help="tez sayfası için ek alt alta şekil (_tez.png)")
+    ap.add_argument("--ornek-tez", action="store_true", help="yalnızca tezdeki temsil örneği şeklini çiz (beyin)")
     args = ap.parse_args()
+    if args.ornek_tez:
+        plot_examples(load_dataset("brain"), tez=True)
+        return
     tag = "_hizli" if args.quick else ""
     out_csv = config.TABLES / f"cozum_bilgi{tag}.csv"
     if not args.plot_only:

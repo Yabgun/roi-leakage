@@ -1,0 +1,2 @@
+scores shared at full precision: key recovered = True  (0.14s)
+scores shared rounded to 4 decimals: key recovered = False  (0.18s)

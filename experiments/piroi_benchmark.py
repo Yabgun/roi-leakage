@@ -41,12 +41,51 @@ def real_examples(size: int):
     return ex
 
 
+def plot_tez():
+    """Tez şekli: şekil içi başlık yok, Türkçe eksenler, PNG + PDF (piroi_maliyet.csv'den)."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import FixedLocator, FuncFormatter, NullLocator
+    from common.tez_bicim import kaydet
+
+    agg = pd.read_csv(config.TABLES / "piroi_maliyet.csv")
+    plt.rcParams["font.family"] = ["Segoe UI", "DejaVu Sans"]
+    fig, ax = plt.subplots(figsize=(6.4, 4.0))
+    markers = {64: "o", 128: "s", 256: "^", 512: "D"}
+    for size, s in agg.groupby("size"):
+        ax.plot(s["rho"], s["hiz_kazanci_toplam"], marker=markers.get(size, "o"), ms=5, lw=1.3,
+                label=f"{size} × {size}")
+    ax.axhline(1.0, color="#898781", lw=0.8, ls=":")
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.yaxis.set_major_locator(FixedLocator([0.7, 1, 2, 4, 8, 16, 32]))
+    ax.yaxis.set_minor_locator(NullLocator())
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+    ax.xaxis.set_major_locator(FixedLocator([0.01, 0.05, 0.1, 0.25, 0.5, 1.0]))
+    ax.xaxis.set_minor_locator(NullLocator())
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+    ax.set_xlabel(r"Şifrelenen alan oranı $\rho$ (log ölçek)")
+    ax.set_ylabel("Tam şifrelemeye göre toplam hız kazancı (kat)")
+    ax.grid(True, which="major", alpha=0.3)
+    ax.legend(title="görüntü boyutu", fontsize=8, title_fontsize=8)
+    fig.tight_layout()
+    kaydet(fig, config.FIGURES / "piroi_hiz_kazanci_tez.png")
+    plt.close(fig)
+
+
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--plot-only", action="store_true", help="ölçüm yapmadan tez şeklini piroi_maliyet.csv'den çiz")
     ap.add_argument("--quick", action="store_true", help="yalnızca 64×64 ve az tekrar")
+    ap.add_argument("--reps", default="64:5,128:5,256:5,512:3",
+                    help="boyut:tekrar listesi; ilk sürüm 64:3,128:3,256:2,512:1 idi (inceleme S3: en az 3 tekrar)")
     args = ap.parse_args()
+    if args.plot_only:
+        plot_tez()
+        return
     sizes = [64] if args.quick else [64, 128, 256, 512]
-    reps = {64: 3, 128: 3, 256: 2, 512: 1}
+    reps = {int(k): int(v) for k, v in (p.split(":") for p in args.reps.split(","))}
 
     t_start = time.perf_counter()
     ctx = make_context()

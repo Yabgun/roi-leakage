@@ -6,8 +6,12 @@ baglam_genisK (ROI K piksel genişletilmiş), kutu (ROI'nin sınırlayıcı kutu
 Beyin MR (Cheng): tümör ROI'si, 3 sınıf, hasta bazlı 5 kat.
 Akciğer grafisi (COVID-QU-Ex): akciğer ROI'si, 3 sınıf + ikili karşılaştırmalar, resmi Test bölmesi.
 
+Normalizasyon (`--norm`, yalnız beyin): `kesit` ön işlemedeki kesit başına ölçekleme (tüm pikseller, tümör dahil; ilk
+sürüm); `gorunur` ham yoğunluklardan, yüzdelikler yalnızca sunucunun gördüğü piksellerden (inceleme S1). `gorunur`
+çıktıları `_gnorm` ekiyle ayrı dosyalara yazılır. Satırlar her koşudan sonra yazılır; var olan satırlar atlanır.
+
 Çalıştırma: .venv\\Scripts\\python -m experiments.attack_context [--dataset brain covidqu] [--views ...]
-            [--seeds 0] [--quick]
+            [--seeds 0] [--norm kesit|gorunur] [--quick]
 """
 from __future__ import annotations
 
@@ -22,7 +26,7 @@ from PIL import Image
 from sklearn.model_selection import GroupKFold
 
 import config
-from attacks.context_cnn import VIEWS, CpuCache, hidden_region, train_and_predict
+from attacks.context_cnn import VIEWS, CpuCache, VisibleNormCache, hidden_region, train_and_predict
 from common.evaluation import auc_score, bootstrap_ci
 from common.report import write_markdown_table
 
@@ -70,7 +74,7 @@ def hidden_fraction(masks: np.ndarray, view: str) -> float:
     return float(torch.cat(fr).mean())
 
 
-def run_brain(views, seeds, epochs, rows, quick):
+def run_brain(views, seeds, epochs, rows, quick, norm="kesit", done_keys=(), save=lambda: None, tag=""):
     meta = pd.read_csv(config.DATA_PROC / "brain" / "meta.csv")
     base = config.DATA_PROC / "brain"
     imgs, masks = build_cache("brain", [base / p for p in meta.img_path], [base / p for p in meta.mask_path])
@@ -82,26 +86,35 @@ def run_brain(views, seeds, epochs, rows, quick):
         for k, (_, te) in enumerate(GroupKFold(5).split(imgs, y, groups)):
             folds[te] = k
     fold_ids = np.unique(folds)[:1] if quick else np.unique(folds)
-    cache = CpuCache(imgs, masks, y)
+    if norm == "gorunur":
+        from experiments.brain_visible_norm import load_raw
+        cache = VisibleNormCache(load_raw(), masks, y)
+    else:
+        cache = CpuCache(imgs, masks, y)
     for view in views:
         frac = hidden_fraction(masks, view)
         for seed in seeds:
+            if ("beyin MR (Cheng)", view, seed) in done_keys:
+                log(f"[beyin{tag}] görüş={view} tohum={seed} zaten var, atlandı")
+                continue
             t0 = time.perf_counter()
             oof = np.full((len(y), 3), np.nan)
             for k in fold_ids:
                 tr, te = np.flatnonzero(folds != k), np.flatnonzero(folds == k)
-                log(f"[beyin] görüş={view} tohum={seed} kat={k} (eğitim {len(tr)}, test {len(te)})")
+                log(f"[beyin{tag}] görüş={view} kat={k} (eğitim {len(tr)}, test {len(te)})")
                 p, _ = train_and_predict(cache, tr, te, view, 3, epochs=epochs, seed=seed, log=log)
                 oof[te] = p
             done = ~np.isnan(oof[:, 0])
             auc = auc_score(y[done], oof[done])
             lo, hi = bootstrap_ci(y[done], oof[done], groups=groups[done], n_boot=500)
-            np.save(PREDS / f"brain_{view}_s{seed}.npy", oof)
+            np.save(PREDS / f"brain_{view}_s{seed}{tag}.npy", oof)
+            fold_auc = float(np.mean([auc_score(y[folds == k], oof[folds == k]) for k in fold_ids]))
             rows.append({"veri": "beyin MR (Cheng)", "hedef": "tümör tipi (3 sınıf)", "gorus": view, "tohum": seed,
                          "gizli_alan_ort": frac, "auc": auc, "ci95_alt": lo, "ci95_ust": hi, "n": int(done.sum()),
-                         "sure_s": time.perf_counter() - t0})
-            log(f"[beyin] görüş={view:15s} tohum={seed} makro AUC={auc:.3f} (%95 GA {lo:.3f}-{hi:.3f}) "
-                f"gizli alan={frac:.3f}")
+                         "sure_s": time.perf_counter() - t0, "normalizasyon": norm, "auc_kat_ort": fold_auc})
+            save()
+            log(f"[beyin{tag}] görüş={view:15s} tohum={seed} makro AUC={auc:.4f} (%95 GA {lo:.3f}-{hi:.3f}) "
+                f"kat ort={fold_auc:.4f} gizli alan={frac:.3f}")
 
 
 def run_covidqu(views, seeds, epochs, rows, quick):
@@ -147,26 +160,37 @@ def main():
     ap.add_argument("--seeds", nargs="*", type=int, default=[0])
     ap.add_argument("--epochs-brain", type=int, default=12)
     ap.add_argument("--epochs-cxr", type=int, default=5)
+    ap.add_argument("--norm", choices=["kesit", "gorunur"], default="kesit",
+                    help="beyin MR normalizasyonu: kesit başına tüm pikseller (ilk sürüm) ya da yalnız görünür pikseller")
     ap.add_argument("--quick", action="store_true", help="küçük alt küme ve 1 epoch ile boru hattı testi")
     args = ap.parse_args()
     assert torch.cuda.is_available(), "CUDA bulunamadı"
+    if args.norm == "gorunur" and "covidqu" in args.dataset:
+        raise SystemExit("--norm gorunur yalnız beyin MR için (COVID-QU-Ex görüntüleri dağıtıldığı biçimde kullanılır)")
     rows = []
-    tag = "_hizli" if args.quick else ""
+    tag = ("_hizli" if args.quick else "") + ("_gnorm" if args.norm == "gorunur" else "")
     out_csv = config.TABLES / f"saldiri_B_baglam{tag}.csv"
-    previous = pd.read_csv(out_csv) if out_csv.exists() and not args.quick else None
+    previous = pd.read_csv(out_csv) if out_csv.exists() else None
+    keys = ["veri", "gorus", "tohum"]
+    done_keys = set() if previous is None or args.quick else \
+        {(v, g, int(t)) for v, g, t in zip(previous.veri, previous.gorus, previous.tohum)}
+
+    def save():
+        df = pd.DataFrame(rows)
+        if previous is not None:
+            old = previous.merge(df[keys], on=keys, how="left", indicator=True)
+            df = pd.concat([old[old["_merge"] == "left_only"].drop(columns="_merge"), df], ignore_index=True)
+        df.to_csv(out_csv, index=False)
+        write_markdown_table(df, out_csv.with_suffix(".md"), floatfmt="{:.3f}")
+        return df
+
     if "brain" in args.dataset:
-        run_brain(args.views, args.seeds, 1 if args.quick else args.epochs_brain, rows, args.quick)
+        run_brain(args.views, args.seeds, 1 if args.quick else args.epochs_brain, rows, args.quick, args.norm,
+                  done_keys, save, "_gnorm" if args.norm == "gorunur" else "")
     if "covidqu" in args.dataset:
         run_covidqu(args.views, args.seeds, 1 if args.quick else args.epochs_cxr, rows, args.quick)
-    df = pd.DataFrame(rows)
-    if previous is not None:
-        keys = ["veri", "gorus", "tohum"]
-        previous = previous.merge(df[keys], on=keys, how="left", indicator=True)
-        previous = previous[previous["_merge"] == "left_only"].drop(columns="_merge")
-        df = pd.concat([previous, df], ignore_index=True)
-    df.to_csv(out_csv, index=False)
-    write_markdown_table(df, config.TABLES / f"saldiri_B_baglam{tag}.md", floatfmt="{:.3f}")
-    print(df.round(3).to_string(index=False))
+    if rows:
+        print(save().round(3).to_string(index=False))
 
 
 if __name__ == "__main__":

@@ -47,14 +47,21 @@ def windows(img: np.ndarray, k: int) -> np.ndarray:
 
 
 class ModelC(nn.Module):
-    def __init__(self, plan, n_classes: int, stats, channels: int = CHANNELS):
+    """n_geom > 0 (yalnızca geometrili eş örnekli referans, inceleme S2): pencere geometrisi standardize edilip tam
+    bağlantılı katmana doğrudan eklenir (doğrusal; şifreli çıkarımda ek çarpma derinliği gerektirmez)."""
+
+    def __init__(self, plan, n_classes: int, stats, channels: int = CHANNELS, n_geom: int = 0, geom_stats=None):
         super().__init__()
         self.plan = list(plan)
+        self.n_geom = n_geom
         self.convs = nn.ModuleList([nn.Conv2d(1, channels, k, stride=k) for _, _, k in self.plan])
         self.bns = nn.ModuleList([nn.BatchNorm2d(channels) for _ in self.plan])
-        self.fc = nn.Linear(sum(channels * (s // k) ** 2 for _, s, k in self.plan), n_classes)
+        self.fc = nn.Linear(sum(channels * (s // k) ** 2 for _, s, k in self.plan) + n_geom, n_classes)
         self.register_buffer("mean", torch.tensor([m for m, _ in stats], dtype=torch.float32))
         self.register_buffer("std", torch.tensor([s for _, s in stats], dtype=torch.float32))
+        gm, gs = geom_stats if geom_stats is not None else (torch.zeros(n_geom), torch.ones(n_geom))
+        self.register_buffer("geom_mean", torch.as_tensor(gm, dtype=torch.float32).reshape(n_geom))
+        self.register_buffer("geom_std", torch.as_tensor(gs, dtype=torch.float32).reshape(n_geom))
         self.offsets = np.cumsum([0] + [s * s for _, s, _ in self.plan]).tolist()
 
     def forward(self, x):
@@ -63,13 +70,16 @@ class ModelC(nn.Module):
             img = x[:, self.offsets[i]:self.offsets[i + 1]].reshape(-1, 1, s, s)
             z = self.bns[i](self.convs[i]((img - self.mean[i]) / self.std[i]))
             feats.append((z * z).flatten(1))
+        if self.n_geom:
+            end = self.offsets[-1]
+            feats.append((x[:, end:end + self.n_geom] - self.geom_mean) / self.geom_std)
         return self.fc(torch.cat(feats, dim=1))
 
 
 @torch.no_grad()
 def export_c(model: ModelC) -> dict:
-    """Standardizasyon ve BN evrişime katlanmış float64 ağırlıklar."""
-    w = {"kind": "C", "n_layers": len(model.plan)}
+    """Standardizasyon ve BN evrişime (geometri standardizasyonu tam bağlantılı katmana) katlanmış float64 ağırlıklar."""
+    w = {"kind": "C", "n_layers": len(model.plan), "n_geom": int(model.n_geom)}
     for i, (_, s, k) in enumerate(model.plan):
         conv, bn = model.convs[i], model.bns[i]
         mean, std = model.mean[i].double(), model.std[i].double()
@@ -80,7 +90,12 @@ def export_c(model: ModelC) -> dict:
         w[f"L{i}_size"], w[f"L{i}_k"] = s, k
         w[f"L{i}_kernels"] = (kern * g[:, None, None]).cpu().numpy()
         w[f"L{i}_bias"] = ((bias - bn.running_mean.double()) * g + bn.bias.double()).cpu().numpy()
-    w["W2"], w["b2"] = model.fc.weight.double().cpu().numpy(), model.fc.bias.double().cpu().numpy()
+    W2, b2 = model.fc.weight.double().clone(), model.fc.bias.double().clone()
+    if model.n_geom:
+        gm, gs = model.geom_mean.double(), model.geom_std.double()
+        b2 -= (W2[:, -model.n_geom:] * (gm / gs)).sum(1)
+        W2[:, -model.n_geom:] = W2[:, -model.n_geom:] / gs
+    w["W2"], w["b2"] = W2.cpu().numpy(), b2.cpu().numpy()
     return w
 
 
@@ -96,6 +111,9 @@ def forward_numpy_c(w: dict, x: np.ndarray) -> np.ndarray:
         kern = w[f"L{i}_kernels"].reshape(len(w[f"L{i}_bias"]), -1)          # (kanal, k*k)
         z = np.einsum("npq,cq->ncp", win, kern) + w[f"L{i}_bias"][None, :, None]
         feats.append((z * z).reshape(len(x), -1))
+    n_geom = int(w.get("n_geom", 0))
+    if n_geom:
+        feats.append(x[:, off:off + n_geom])
     return np.concatenate(feats, axis=1) @ w["W2"].T + w["b2"]
 
 
@@ -117,6 +135,8 @@ class CNNInference:
     """Model C'nin CKKS ile şifreli çıkarımı; `FoveaHEInference` ile aynı arayüz (encrypt, server, decrypt, run)."""
 
     def __init__(self, ctx: ts.Context, weights: dict, poly_modulus: int = config.PIROI_POLY_MODULUS):
+        if int(weights.get("n_geom", 0)):
+            raise NotImplementedError("geometrili Model C referansı yalnızca şifresiz doğruluk için eğitildi")
         self.ctx = ctx
         slots = poly_modulus // 2
         self.layers, fc_off = [], 0

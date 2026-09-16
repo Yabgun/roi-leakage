@@ -1,0 +1,15 @@
+veri,bozulma,duzey,gorus,aciklama,tohum,auc,ci95_alt,ci95_ust,n,epoch,sure_s,normalizasyon
+beyin MR (Cheng),gauss,0.05,baglam,"saldırgan: ROI gizli, bağlam bozuk",0,0.9734756281958816,0.9557267069079852,0.9878799254793093,3064,12,239.61818789993413,gorunur
+beyin MR (Cheng),gauss,0.05,tam,"fayda: ROI temiz, bağlam bozuk",0,0.9900246729450476,0.9791199408221548,0.9968250388842416,3064,12,197.92710189998616,gorunur
+beyin MR (Cheng),gauss,0.1,baglam,"saldırgan: ROI gizli, bağlam bozuk",0,0.972420543045344,0.95103956186258,0.988971192959338,3064,12,198.01580860000104,gorunur
+beyin MR (Cheng),gauss,0.1,tam,"fayda: ROI temiz, bağlam bozuk",0,0.9887821195105188,0.9722873083498128,0.9975352729091164,3064,12,198.0776501999935,gorunur
+beyin MR (Cheng),gauss,0.2,baglam,"saldırgan: ROI gizli, bağlam bozuk",0,0.971134643602427,0.9552817542930744,0.984169673496016,3064,12,198.1831794000464,gorunur
+beyin MR (Cheng),gauss,0.2,tam,"fayda: ROI temiz, bağlam bozuk",0,0.9882632791612032,0.9747555048476584,0.9961760573893458,3064,12,198.0804329999956,gorunur
+beyin MR (Cheng),gauss,0.4,baglam,"saldırgan: ROI gizli, bağlam bozuk",0,0.966994190570326,0.950336795797898,0.9819575448968864,3064,12,198.18091339990497,gorunur
+beyin MR (Cheng),gauss,0.4,tam,"fayda: ROI temiz, bağlam bozuk",0,0.9874791782105876,0.9742766404769836,0.9962914770228032,3064,12,198.2050828000065,gorunur
+beyin MR (Cheng),bulanik,2.0,baglam,"saldırgan: ROI gizli, bağlam bozuk",0,0.9766902036933868,0.9561246467596038,0.9906867536432908,3064,12,201.5980453999946,gorunur
+beyin MR (Cheng),bulanik,2.0,tam,"fayda: ROI temiz, bağlam bozuk",0,0.9926156729619208,0.9815607474890146,0.9984136564233248,3064,12,200.7553166000871,gorunur
+beyin MR (Cheng),bulanik,4.0,baglam,"saldırgan: ROI gizli, bağlam bozuk",0,0.9805884231329356,0.9640871207757874,0.9921878312605106,3064,12,203.5568133000052,gorunur
+beyin MR (Cheng),bulanik,4.0,tam,"fayda: ROI temiz, bağlam bozuk",0,0.9929962679667428,0.9838123722110992,0.9982083124918336,3064,12,202.49996259994805,gorunur
+beyin MR (Cheng),bulanik,8.0,baglam,"saldırgan: ROI gizli, bağlam bozuk",0,0.9771467501393584,0.96367315618669,0.9875454015252346,3064,12,211.1960720999632,gorunur
+beyin MR (Cheng),bulanik,8.0,tam,"fayda: ROI temiz, bağlam bozuk",0,0.9944980999516276,0.988784230545677,0.9981502064199521,3064,12,209.10119729989674,gorunur

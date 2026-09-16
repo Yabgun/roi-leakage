@@ -1,0 +1,14 @@
+(a) SUTUN PAKETLEME, 1022 hasta, d=20
+   k   sifr(ms) sunucu(ms)    coz(ms) trafik(MB)    maks hata
+   4       15.6        3.5        0.7       1.34     1.36e-06
+   7       27.7        6.3        0.8       2.34     1.32e-06
+  10       39.5        7.5        0.8       3.34     1.67e-06
+  14       56.1       10.7        0.8       4.68     1.81e-06
+  20       80.5       15.0        0.8       6.69     2.06e-06
+
+(b) SATIR PAKETLEME, tek hasta (sifrele+dot+coz toplam, medyan)
+k= 4  toplam=   8.3 ms  ciphertext=   334 KB  hata=5.4e-07
+k= 7  toplam=  12.5 ms  ciphertext=   334 KB  hata=1.7e-06
+k=20  toplam=  14.9 ms  ciphertext=   334 KB  hata=1.7e-06
+
+Context + galois anahtar uretimi: 279 ms

@@ -2,7 +2,8 @@
 
 Sunucunun görüşü (Π_ROI sızıntı fonksiyonu): ROI dışındaki açık pikseller + ROI'nin konumu/şekli.
 Girdi 3 kanal: [görünür görüntü, görünür görüntü, gizli bölge göstergesi]. ImageNet ön eğitimli ResNet-18.
-Veriler CPU'da uint8 önbellekte tutulur, artırma ve görüş oluşturma GPU'da yapılır.
+Veriler CPU'da uint8 önbellekte tutulur, artırma ve görüş oluşturma GPU'da yapılır. Beyin MR'da `VisibleNormCache` ham
+yoğunlukları tutar ve normalizasyonu yalnızca görünür piksellerden yapar (`--norm gorunur`, inceleme S1).
 """
 from __future__ import annotations
 
@@ -65,6 +66,18 @@ def server_view(img: torch.Tensor, mask: torch.Tensor, view: str, extra_hidden: 
     return (x - _MEAN.to(x.device)) / _STD.to(x.device)
 
 
+def normalize_visible(x: torch.Tensor, hidden: torch.Tensor, q: tuple[float, float] = (0.005, 0.995)) -> torch.Tensor:
+    """Görüntü başına yüzdelik normalizasyon [0, 1]; yüzdelikler yalnızca görünür (gizli olmayan) piksellerden.
+
+    x: (N,1,H,W) ham yoğunluk; hidden: (N,1,H,W) bool. Hiç görünür pikseli olmayan görüntü sıfır olur.
+    """
+    n = x.shape[0]
+    vals = x.float().masked_fill(hidden, float("nan")).reshape(n, -1)
+    qs = torch.nanquantile(vals, torch.tensor(q, device=x.device, dtype=vals.dtype), dim=1)
+    lo, hi = qs[0].view(n, 1, 1, 1), qs[1].view(n, 1, 1, 1)
+    return torch.nan_to_num((x.float() - lo) / (hi - lo).clamp_min(1e-6), nan=0.0).clamp_(0, 1)
+
+
 def random_affine(img: torch.Tensor, mask: torch.Tensor, max_shift: float = 0.04, scale=(0.93, 1.07)):
     """Aynı küçük kaydırma/ölçekleme görüntüye (bilineer) ve maskeye (en yakın) uygulanır."""
     n = img.shape[0]
@@ -105,6 +118,32 @@ class CpuCache:
         if train:
             x, m = random_affine(x, m)
         extra = extra_hidden_fn(m) if extra_hidden_fn is not None else None
+        return server_view(x, m, view, extra), self.y[idx_t].to(self.device, non_blocking=True)
+
+
+class VisibleNormCache(CpuCache):
+    """Ham yoğunluklu görüntüler (float32, N×H×W); normalizasyon görüş oluşturulurken sunucunun gördüğü piksellerden.
+
+    Beyin MR ön işlemesi (`experiments.prepare_data`) her kesiti tümör dahil tüm piksellerin 0.5–99.5 yüzdelikleriyle
+    ölçekler; açık piksellerin ölçeği böylece gizli tümörün parlaklığına bağlanabilir (gerçek sunucunun göremeyeceği yapay
+    kanal, inceleme S1). Burada artırmadan sonra gizli bölge belirlenince yüzdelikler yalnızca görünür piksellerden
+    hesaplanır; gizli pikseller normalizasyona hiç girmez.
+    """
+
+    def batch(self, idx: np.ndarray, view: str, train: bool, extra_hidden_fn=None):
+        idx_t = torch.from_numpy(np.asarray(idx, dtype=np.int64))
+        n = len(idx_t)
+        torch.index_select(self.img, 0, idx_t, out=self._img_buf[:n])
+        torch.index_select(self.mask, 0, idx_t, out=self._mask_buf[:n])
+        x = self._img_buf[:n].to(self.device, non_blocking=True).float().unsqueeze(1)
+        m = self._mask_buf[:n].to(self.device, non_blocking=True).unsqueeze(1)
+        if train:
+            x, m = random_affine(x, m)
+        extra = extra_hidden_fn(m) if extra_hidden_fn is not None else None
+        hidden = hidden_region(m, view)
+        if extra is not None:
+            hidden = hidden | extra
+        x = normalize_visible(x, hidden)
         return server_view(x, m, view, extra), self.y[idx_t].to(self.device, non_blocking=True)
 
 
@@ -150,8 +189,19 @@ def train_and_predict(cache: CpuCache, train_idx: np.ndarray, test_idx: np.ndarr
     order = rng.permutation(len(test_idx))
     probs = np.zeros((len(test_idx), n_classes), dtype=np.float64)
     with torch.no_grad():
-        for i in range(0, len(test_idx), 256):
-            part = order[i:i + 256]
-            x, _ = cache.batch(test_idx[part], view, train=False, extra_hidden_fn=extra_hidden_fn)
-            probs[part] = torch.softmax(model(x).double(), 1).cpu().numpy()
+        for i in range(0, len(test_idx), EVAL_BATCH):
+            part = order[i:i + EVAL_BATCH]
+            x, _ = cache.batch(pad_batch(test_idx[part]), view, train=False, extra_hidden_fn=extra_hidden_fn)
+            probs[part] = torch.softmax(model(x).double(), 1)[:len(part)].cpu().numpy()
     return probs, model
+
+
+EVAL_BATCH = 256
+
+
+def pad_batch(idx: np.ndarray, size: int = EVAL_BATCH) -> np.ndarray:
+    """Son yığını ilk örneğin tekrarıyla sabit boyuta tamamlar (fazlası atılır). cuDNN algoritma seçimi yığın boyutuna
+    bağlı olduğundan, farklı boyuttaki son yığında özdeş girdiler ~1e-7 farklı çıktı verip tamamen gizli kontrolü
+    0.500'den saptırabiliyordu (16 Eyl 2026 hızlı denemesinde bir kez 0.495)."""
+    idx = np.asarray(idx)
+    return idx if len(idx) >= size else np.concatenate([idx, np.repeat(idx[:1], size - len(idx))])

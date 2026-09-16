@@ -1,0 +1,9 @@
+{
+  "brain": {
+    "AUC<=0.8 icin min gizli alan (sizinti_gudumlu)": 1.0,
+    "AUC<=0.7 icin min gizli alan (sizinti_gudumlu)": 1.0,
+    "AUC<=0.6 icin min gizli alan (sizinti_gudumlu)": 1.0,
+    "goruntu_roi AUC": 0.9365224845600046,
+    "kanonik AUC": 0.9210611152620293
+  }
+}

@@ -171,10 +171,12 @@ def summarize(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def plot(summary: pd.DataFrame, out_path):
+def plot(summary: pd.DataFrame, out_path, tez: bool = False):
+    """tez: şekil içi başlık yok, "harici" terimi, PNG + PDF."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from common.tez_bicim import kaydet
 
     plt.rcParams["font.family"] = ["Segoe UI", "DejaVu Sans"]
     d = summary.iloc[::-1].reset_index(drop=True)
@@ -191,9 +193,9 @@ def plot(summary: pd.DataFrame, out_path):
     y = np.arange(len(d))
     ax.hlines(y, d.auc_kaggle, d.auc_ic, color=INK["axis"], lw=1.2, zorder=2)
     ax.scatter(d.auc_ic, y, s=46, color=SERIES["ic"], edgecolor=INK["surface"], linewidths=1.2, zorder=3,
-               label="COVID-QU-Ex Test (iç)")
+               label="COVID-QU-Ex test bölmesi (iç)")
     ax.scatter(d.auc_kaggle, y, s=46, color=SERIES["dis"], edgecolor=INK["surface"], linewidths=1.2, zorder=3,
-               label="Kaggle, kopyasız (dış)")
+               label="Kaggle, tekrar etmeyen görüntüler (harici)" if tez else "Kaggle, kopyasız (dış)")
     for i, r in d.iterrows():  # dış değer, turuncu noktanın dış yanına (iç noktanın etiketi gibi okunmasın)
         right = r.auc_kaggle >= r.auc_ic
         ax.annotate(f"{r.auc_kaggle:.3f}", (r.auc_kaggle, i), xytext=(7 if right else -7, 0),
@@ -207,12 +209,16 @@ def plot(summary: pd.DataFrame, out_path):
     ax.set_xticks(np.arange(np.ceil(left / 0.025) * 0.025, 1.0 + 1e-9, 0.025))
     ax.set_xlim(left, 1.02)
     ax.set_xlabel("teşhis AUC (makro, üç sınıf)", fontsize=8, color=INK["secondary"])
-    ax.set_title("COVID-QU-Ex'te eğitilen şifreli modeller harici derlemede", loc="left", fontsize=9,
-                 color=INK["primary"], pad=18)
+    if not tez:
+        ax.set_title("COVID-QU-Ex'te eğitilen şifreli modeller harici derlemede", loc="left", fontsize=9,
+                     color=INK["primary"], pad=18)
     ax.legend(loc="lower left", bbox_to_anchor=(0.0, 1.0), ncol=2, fontsize=7, frameon=False,
               labelcolor=INK["secondary"], borderaxespad=0.1, handletextpad=0.3, columnspacing=1.4)
     fig.tight_layout()
-    fig.savefig(out_path, dpi=160, facecolor=INK["surface"])
+    if tez:
+        kaydet(fig, out_path, dpi=200, facecolor=INK["surface"])
+    else:
+        fig.savefig(out_path, dpi=160, facecolor=INK["surface"])
     plt.close(fig)
 
 
@@ -221,7 +227,12 @@ def main():
     ap.add_argument("--seeds", nargs="*", type=int, default=[0, 1, 2, 3, 4])
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     ap.add_argument("--quick", action="store_true", help="sınıf başına 40 görüntü, tohum 0")
+    ap.add_argument("--plot-tez", action="store_true", help="yalnızca tez şeklini cozum_genelleme.csv'den çiz")
     args = ap.parse_args()
+    if args.plot_tez:
+        plot(summarize(read_table(config.TABLES / "cozum_genelleme.csv")), config.FIGURES / "cozum_genelleme_tez.png",
+             tez=True)
+        return
     tag = "_hizli" if args.quick else ""
     seeds = [0] if args.quick else args.seeds
     labels = load_dataset("covidqu").labels

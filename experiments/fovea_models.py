@@ -24,6 +24,10 @@ Veri GPU belleğine uint8 olarak yüklenir (beyin 512 px 0.8 GB, COVID-QU-Ex 256
 Ölçüt (COZUM_PLANI §6): aynı model sınıfında odaklı temsil ile tam görüntü farkı ≤ 0.03 AUC. Ağırlıklar katlanmış numpy
 olarak results/checkpoints/.
 
+İnceleme S2 (16 Eyl 2026): `U64_pencere` = eş örnekli U64 + FoveaHE'nin 3 geometri değeri (odak penceresinin merkezi ve
+kenarı; 4.099 değer, tek ciphertext). ROI bilgisini FoveaHE ile eşitleyen sığ model referansıdır. D ve D2'de geometri
+girdiye eklenir; C'de standardize edilip tam bağlantılı katmana eklenir (`ModelC(n_geom=3)`).
+
 Çalıştırma: .venv\\Scripts\\python -m experiments.fovea_models [--dataset brain covidqu] [--models D D2 C]
             [--configs ...] [--seeds 0] [--device cuda] [--threads 6] [--quick]
 """
@@ -45,7 +49,7 @@ from experiments.fovea_info import fold_mean_auc
 from foveahe.data import DISPLAY, Dataset, load_dataset, load_layers
 from foveahe.he_cnn import ModelC, export_c, forward_numpy_c, intermediate_max, layer_plan
 from foveahe.he_models import STD_MIN, export, forward_numpy, make_model, save_weights
-from foveahe.representation import FoveaSpec
+from foveahe.representation import GEOM_VALUES, FoveaSpec
 
 LOG = config.LOGS / "fovea_models.log"
 PREDS = config.RESULTS / "preds"
@@ -67,10 +71,17 @@ def default_configs(name: str) -> list[str]:
     return [f"U{ORIGINAL[name]}", "tam", "U90", "U64", "F64_G32", "F64_P32k2_G32", "F32_G16", "F64", "sabit"]
 
 
+def c_geometry(spec: FoveaSpec) -> int:
+    """Model C geometri kullanmaz; yalnızca `_pencere` (eş örnekli + geometri, inceleme S2) referansında 3 değer alır."""
+    return GEOM_VALUES if spec.window else 0
+
+
 def kind_of(name: str, dataset: str) -> str:
     spec = FoveaSpec.parse(name)
     if name == "sabit":
         return "sabit"
+    if spec.window:
+        return "es_ornekli_geometri"
     if spec.focus or spec.periphery:
         return "odakli"
     if spec.glob == ORIGINAL[dataset]:
@@ -128,6 +139,13 @@ class VectorData:
         mean = s / len(idx)
         std = torch.sqrt(torch.clamp(s2 / len(idx) - mean ** 2, min=0.0))
         return mean.float(), torch.clamp(std, min=STD_MIN).float()
+
+    def geom_stats(self, idx):
+        """Geometri sütunlarının ortalama ve std'si (Model C'nin geometrili referansı için)."""
+        g = self.geom[np.asarray(idx)] if self.device == "cpu" else \
+            self.geom.index_select(0, torch.as_tensor(np.asarray(idx), device=self.device)).cpu().numpy()
+        g = np.asarray(g, dtype=np.float64)
+        return torch.tensor(g.mean(0), dtype=torch.float32), torch.tensor(np.maximum(g.std(0), STD_MIN), dtype=torch.float32)
 
     def layer_stats(self, idx, plan, chunk: int = 256):
         """Model C: katman başına tek ölçek (ortalama, std)."""
@@ -189,7 +207,9 @@ def fit_select(kind, spec, data, y, tr, va, n_classes, seed, device, max_epochs,
     if kind == "C":
         plan = layer_plan(spec)
         stats = data.layer_stats(tr, plan)
-        build = lambda: ModelC(plan, n_classes, stats)
+        n_geom = c_geometry(spec)
+        geom_stats = data.geom_stats(tr) if n_geom else None
+        build = lambda: ModelC(plan, n_classes, stats, n_geom=n_geom, geom_stats=geom_stats)
     else:
         mean, std = data.moments(tr)
         build = lambda: make_model(kind, data.n_features, n_classes, mean, std)
@@ -353,7 +373,7 @@ def run_dataset(name, models, configs, seeds, device, quick, out_csv, tag):
                 edge.append("epoch")
             if max(wds) >= WD_MAX * 10:
                 edge.append("wd")
-            n_values = sum(s * s for _, s, _ in layer_plan(spec)) if kind == "C" else \
+            n_values = sum(s * s for _, s, _ in layer_plan(spec)) + c_geometry(spec) if kind == "C" else \
                 (data.n_features if cfg != "sabit" else 0)
             row = {"veri": ds.display, "model": kind, "temsil": cfg, "temsil_turu": kind_of(cfg, name),
                    "sifreli_deger": n_values, "tohum": seed, "auc": auc, "ci95_alt": lo, "ci95_ust": hi,

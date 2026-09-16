@@ -12,8 +12,12 @@ Tüm adımların tablolarını tek yerde birleştirir (veri kümesi başına bir
 Gizlilik şartlı hız kazancı: saldırgan AUC ≤ 0.8 koşulunu sağlayan yapılandırmanın hız kazancı (Π_ROI'de bu koşul
 neredeyse tüm görüntüyü şifrelemeyi gerektirir, yani ~1×).
 
-Çıktılar: results/figures/cozum_pareto_{veri}.png, results/tables/cozum_ozet.csv|md.
+Beyin MR'da Π_ROI saldırgan satırları varsayılan olarak görünür piksel normalizasyonuyla koşulan tablolardan
+(`*_gnorm.csv`, inceleme S1) alınır; `--norm kesit` ilk sürümün tablolarını kullanır.
+
+Çıktılar: results/figures/cozum_pareto_{veri}.png|pdf, results/tables/cozum_ozet.csv|md.
 Çalıştırma: .venv\\Scripts\\python -m experiments.fovea_pareto [--dataset brain covidqu] [--configs F32_G16 F64_G32]
+            [--norm gorunur|kesit]
 """
 from __future__ import annotations
 
@@ -174,7 +178,7 @@ def plot(df: pd.DataFrame, name: str):
     ax.set_axisbelow(True)
     def short(name: str) -> str:
         if name.startswith("Π_ROI"):
-            return "Π_ROI (gizlilik şartlı)" if "gizlilik" in name else "Π_ROI (varsayılan)"
+            return r"$\Pi_{\mathrm{ROI}}$ (gizlilik şartlı)" if "gizlilik" in name else r"$\Pi_{\mathrm{ROI}}$ (varsayılan)"
         return name.split(" (")[0]
 
     lo, hi = d.teshis_auc.min(), d.teshis_auc.max()
@@ -202,17 +206,16 @@ def plot(df: pd.DataFrame, name: str):
     ax.set_xlabel("hız kazancı: aynı model sınıfının tam şifreleme süresine göre (log ölçek)", fontsize=8,
                   color=INK["secondary"])
     ax.set_ylabel("teşhis AUC (şifreli çalışabilen model)", fontsize=8, color=INK["secondary"])
-    ax.set_title(f"{DISPLAY[name]}: hız, doğruluk ve sızıntı", loc="left", fontsize=9, color=INK["primary"])
     bar = fig.colorbar(sc, ax=ax, pad=0.02)
     bar.set_label("saldırgan AUC (sunucunun gördüğünden teşhis)", fontsize=8, color=INK["secondary"])
     bar.ax.tick_params(colors=INK["muted"], labelcolor=INK["secondary"], labelsize=7, width=0.6)
     bar.ax.axhline(LEAKFREE_LIMIT, color=INK["surface"], lw=1.2)
     bar.ax.text(1.6, LEAKFREE_LIMIT, f" şans düzeyi sınırı {LEAKFREE_LIMIT}", va="center", fontsize=7,
                 color=INK["secondary"], transform=bar.ax.get_yaxis_transform())
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0.035 if dodged else 0, 1, 1))
     if dodged:
-        fig.text(0.995, 0.01, "not: aynı doğrulukta çakışan noktalara yalnızca çizimde küçük dikey kaydırma uygulandı",
-                 ha="right", fontsize=6.5, color=INK["muted"])
+        fig.text(0.01, 0.012, "Not: aynı doğrulukta çakışan noktalara yalnızca çizimde küçük dikey kaydırma uygulanmıştır.",
+                 ha="left", fontsize=7.5, color=INK["secondary"])
     # Etiketler yerleşim kesinleşince: her nokta için sırayla 8 konum denenir; hiçbir işarete, önceki etikete ya da eksen
     # dışına taşmayan ilk konum seçilir (5 tohumda yakınlaşan noktalar sabit "üste yaz" kuralıyla çakışıyordu).
     from matplotlib.transforms import Bbox
@@ -243,14 +246,26 @@ def plot(df: pd.DataFrame, name: str):
                               fontsize=7, color=INK["primary"])
             chosen = ann.get_window_extent(renderer)
         taken.append(chosen)
-    fig.savefig(config.FIGURES / f"cozum_pareto_{name}.png", dpi=160, facecolor=INK["surface"])
+    for ext in ("png", "pdf"):
+        fig.savefig(config.FIGURES / f"cozum_pareto_{name}.{ext}", dpi=200, facecolor=INK["surface"])
     plt.close(fig)
+
+
+def replace_brain(df, new, brain: str, what: str):
+    """Beyin satırlarını görünür piksel normalizasyonlu tablodan alır (S1); tablo yoksa uyarıp ilk sürümü korur."""
+    if df is None:
+        return new
+    if new is None or not (new.veri == brain).any():
+        print(f"UYARI: {what} için _gnorm tablosu yok; beyin satırları ilk sürümden (kesit normalizasyonu)")
+        return df
+    return pd.concat([df[df.veri != brain], new[new.veri == brain]], ignore_index=True)
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", nargs="*", default=["brain", "covidqu"])
     ap.add_argument("--configs", nargs="*", default=["F32_G16", "F64_G32"])
+    ap.add_argument("--norm", choices=["gorunur", "kesit"], default="gorunur")
     args = ap.parse_args()
     models_raw, costs = table("cozum_modeller.csv"), table("cozum_maliyet.csv")
     if models_raw is None or costs is None:
@@ -259,6 +274,10 @@ def main():
     sizinti, baglam = table("cozum_sizinti.csv"), table("saldiri_B_baglam.csv")
     rakipler, savunma = table("cozum_rakipler.csv"), table("savunma.csv")
     gurultu = table("saldiri_B_gurultu.csv")
+    if args.norm == "gorunur":
+        baglam = replace_brain(baglam, table("saldiri_B_baglam_gnorm.csv"), DISPLAY["brain"], "Saldırı B")
+        savunma = replace_brain(savunma, table("savunma_gnorm.csv"), "brain", "savunma")
+        gurultu = replace_brain(gurultu, table("saldiri_B_gurultu_gnorm.csv"), DISPLAY["brain"], "bozuk bağlam")
     rows = []
     for name in args.dataset:
         rows += build_rows(name, args.configs, models, costs, sizinti, baglam, rakipler, savunma, gurultu)

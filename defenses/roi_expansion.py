@@ -8,7 +8,7 @@ from __future__ import annotations
 import numpy as np
 import torch
 
-from attacks.context_cnn import CpuCache
+from attacks.context_cnn import EVAL_BATCH, CpuCache, pad_batch
 from common.evaluation import auc_score
 
 
@@ -60,16 +60,17 @@ def hidden_fraction(hidden: np.ndarray, masks: np.ndarray, idx: np.ndarray) -> f
 
 
 @torch.no_grad()
-def predict(model, cache: CpuCache, idx: np.ndarray, hidden_fn, batch: int = 256) -> np.ndarray:
-    """fp32 ve karışık sırada tahmin: fp16 gürültüsü + sınıfa göre sıralı indeks kaynaklı sahte AUC'yi önler."""
+def predict(model, cache: CpuCache, idx: np.ndarray, hidden_fn, batch: int = EVAL_BATCH) -> np.ndarray:
+    """fp32 ve karışık sırada tahmin: fp16 gürültüsü + sınıfa göre sıralı indeks kaynaklı sahte AUC'yi önler.
+    Son yığın sabit boyuta tamamlanır (`attacks.context_cnn.pad_batch`)."""
     model.eval()
     idx = np.asarray(idx)
     order = np.random.default_rng(12345).permutation(len(idx))
     out = np.zeros((len(idx), model.fc.out_features), dtype=np.float64)
     for i in range(0, len(idx), batch):
         part = order[i:i + batch]
-        x, _ = cache.batch(idx[part], "tam", train=False, extra_hidden_fn=hidden_fn)
-        out[part] = torch.softmax(model(x).double(), 1).cpu().numpy()
+        x, _ = cache.batch(pad_batch(idx[part], batch), "tam", train=False, extra_hidden_fn=hidden_fn)
+        out[part] = torch.softmax(model(x).double(), 1)[:len(part)].cpu().numpy()
     return out
 
 

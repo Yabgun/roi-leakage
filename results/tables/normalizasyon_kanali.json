@@ -1,0 +1,38 @@
+{
+  "aciklama": "ölçek oranı = (99.5 - 0.5 yüzdelik, tüm pikseller) / (aynısı, yalnız tümör dışı pikseller); 1'den büyükse eski normalizasyonda açık piksellerin ölçeği gizli tümöre bağlı",
+  "kesit": 3064,
+  "olcek_orani_medyan": 0.9988779781575552,
+  "olcek_orani_1yuzde_ustu_oran": 0.025456919060052218,
+  "olcek_orani_5yuzde_ustu_oran": 0.00032637075718015666,
+  "yalniz_olcek_orani_auc": 0.6419042504484719,
+  "olcek_orani_ve_ust_yuzdelikler_auc": 0.7605747518449565,
+  "sinif_bazinda": [
+    {
+      "label_name": "glioma",
+      "n": 1426,
+      "olcek_orani_medyan": 0.9983,
+      "olcek_orani_ort": 0.9987,
+      "oran_1yuzde_ustu": 0.0309,
+      "tumor_ust_asan_oran_ort": 0.0055
+    },
+    {
+      "label_name": "meningioma",
+      "n": 708,
+      "olcek_orani_medyan": 0.9988,
+      "olcek_orani_ort": 0.9989,
+      "oran_1yuzde_ustu": 0.0155,
+      "tumor_ust_asan_oran_ort": 0.0054
+    },
+    {
+      "label_name": "pituitary",
+      "n": 930,
+      "olcek_orani_medyan": 0.9997,
+      "olcek_orani_ort": 1.0002,
+      "oran_1yuzde_ustu": 0.0247,
+      "tumor_ust_asan_oran_ort": 0.008
+    }
+  ],
+  "saglama_korelasyon_ort": 0.9999262947870355,
+  "saglama_korelasyon_min": 0.9997484960170162,
+  "saglama_ortalama_mutlak_fark_0_255": 2.352332040537364
+}

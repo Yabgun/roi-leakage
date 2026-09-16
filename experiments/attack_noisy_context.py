@@ -12,8 +12,12 @@ Bozulmalar (görüntü [0,1] ölçeğinde, 224 px):
 Bozulma artırmadan (kaydırma/ölçekleme) önce, orijinal ızgarada uygulanır; ROI içi temiz kalır (fayda görüşü) ya da
 gizlenir (saldırgan görüşü "baglam").
 
+`--norm gorunur` (yalnız beyin, inceleme S1): istemci ham kesiti yalnızca açık gönderilen bağlam piksellerinin (ROI dışı)
+yüzdelikleriyle normalize eder, sonra bağlamı bozar; ROI içeriği açık piksellerin ölçeğine girmez. Çıktılar `_gnorm` ekli.
+
 Çıktılar: results/tables/saldiri_B_gurultu.csv|md (satırlar her koşudan sonra yazılır, biten atlanır).
-Çalıştırma: .venv\\Scripts\\python -m experiments.attack_noisy_context [--dataset brain covidqu] [--seeds 0] [--quick]
+Çalıştırma: .venv\\Scripts\\python -m experiments.attack_noisy_context [--dataset brain covidqu] [--seeds 0]
+            [--norm kesit|gorunur] [--quick]
 """
 from __future__ import annotations
 
@@ -26,7 +30,7 @@ import torch
 import torch.nn.functional as F
 
 import config
-from attacks.context_cnn import CpuCache, random_affine, server_view, train_and_predict
+from attacks.context_cnn import CpuCache, normalize_visible, random_affine, server_view, train_and_predict
 from common.evaluation import auc_score, bootstrap_ci
 from common.report import write_markdown_table
 from experiments.attack_context import build_cache
@@ -93,6 +97,24 @@ class PerturbedContextCache(CpuCache):
         return server_view(x, m, view, extra), self.y[idx_t].to(self.device, non_blocking=True)
 
 
+class PerturbedVisibleNormCache(PerturbedContextCache):
+    """Ham yoğunluklar; normalizasyon yalnızca bağlam (ROI dışı) piksellerinden, bozulmadan önce (S1)."""
+
+    def batch(self, idx, view: str, train: bool, extra_hidden_fn=None):
+        idx_t = torch.from_numpy(np.asarray(idx, dtype=np.int64))
+        n = len(idx_t)
+        torch.index_select(self.img, 0, idx_t, out=self._img_buf[:n])
+        torch.index_select(self.mask, 0, idx_t, out=self._mask_buf[:n])
+        x = self._img_buf[:n].to(self.device, non_blocking=True).float().unsqueeze(1)
+        m = self._mask_buf[:n].to(self.device, non_blocking=True).unsqueeze(1)
+        x = normalize_visible(x, m)
+        x = torch.where(m, x, self.perturb(x, m, idx_t))
+        if train:
+            x, m = random_affine(x, m)
+        extra = extra_hidden_fn(m) if extra_hidden_fn is not None else None
+        return server_view(x, m, view, extra), self.y[idx_t].to(self.device, non_blocking=True)
+
+
 def save_row(row: dict, out_csv):
     keys = ["veri", "bozulma", "duzey", "gorus", "tohum"]
     if out_csv.exists():
@@ -105,9 +127,13 @@ def save_row(row: dict, out_csv):
     write_markdown_table(df, out_csv.with_suffix(".md"), floatfmt="{:.4f}")
 
 
-def run(name: str, seeds, epochs: int, quick: bool, out_csv, tag: str):
+def run(name: str, seeds, epochs: int, quick: bool, out_csv, tag: str, norm: str = "kesit"):
     ds = load_dataset(name)
     imgs, masks = build_cache(name, ds.img_paths, ds.mask_paths)
+    cache_cls = PerturbedContextCache
+    if norm == "gorunur":
+        from experiments.brain_visible_norm import load_raw
+        imgs, cache_cls = load_raw(), PerturbedVisibleNormCache
     done = set()
     if out_csv.exists():
         prev = pd.read_csv(out_csv)
@@ -115,7 +141,7 @@ def run(name: str, seeds, epochs: int, quick: bool, out_csv, tag: str):
     n_cls = len(ds.labels)
     perturbations = PERTURBATIONS[:1] + PERTURBATIONS[4:5] if quick else PERTURBATIONS
     for kind, level in perturbations:
-        cache = PerturbedContextCache(imgs, masks, ds.y, kind, level)
+        cache = cache_cls(imgs, masks, ds.y, kind, level)
         for view in VIEWS:
             for seed in seeds:
                 if (ds.display, kind, float(level), view, seed) in done:
@@ -144,7 +170,7 @@ def run(name: str, seeds, epochs: int, quick: bool, out_csv, tag: str):
                 np.save(PREDS / f"gurultu_{name}_{kind}{level:g}_{view}_s{seed}{tag}.npy", probs)
                 row = {"veri": ds.display, "bozulma": kind, "duzey": float(level), "gorus": view,
                        "aciklama": VIEWS[view], "tohum": seed, "auc": auc, "ci95_alt": lo, "ci95_ust": hi,
-                       "n": len(te), "epoch": epochs, "sure_s": time.perf_counter() - t0}
+                       "n": len(te), "epoch": epochs, "sure_s": time.perf_counter() - t0, "normalizasyon": norm}
                 save_row(row, out_csv)
                 log(f"[{name}{tag}] {kind} {level:g} {view:6s} tohum={seed} AUC={auc:.4f} (%95 GA {lo:.4f}-{hi:.4f}) "
                     f"{row['sure_s']:.0f} s")
@@ -158,14 +184,17 @@ def main():
     ap.add_argument("--seeds", nargs="*", type=int, default=[0])
     ap.add_argument("--epochs-brain", type=int, default=12)
     ap.add_argument("--epochs-cxr", type=int, default=5)
+    ap.add_argument("--norm", choices=["kesit", "gorunur"], default="kesit")
     ap.add_argument("--quick", action="store_true", help="bir gürültü ve bir bulanıklık düzeyi, küçük alt küme, 1 epoch")
     args = ap.parse_args()
     assert torch.cuda.is_available(), "CUDA bulunamadı"
-    tag = "_hizli" if args.quick else ""
+    if args.norm == "gorunur" and args.dataset != ["brain"]:
+        raise SystemExit("--norm gorunur yalnız beyin MR için: --dataset brain")
+    tag = ("_hizli" if args.quick else "") + ("_gnorm" if args.norm == "gorunur" else "")
     out_csv = config.TABLES / f"saldiri_B_gurultu{tag}.csv"
     for name in args.dataset:
         epochs = 1 if args.quick else (args.epochs_brain if name == "brain" else args.epochs_cxr)
-        run(name, args.seeds, epochs, args.quick, out_csv, tag)
+        run(name, args.seeds, epochs, args.quick, out_csv, tag, args.norm)
     if out_csv.exists():
         print(pd.read_csv(out_csv).round(4).to_string(index=False))
 

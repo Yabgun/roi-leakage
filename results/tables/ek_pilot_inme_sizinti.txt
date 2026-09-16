@@ -1,0 +1,32 @@
+satir: 5109 | stroke orani: 0.049
+smoking_status dagilimi:
+ smoking_status
+never smoked       0.370
+Unknown            0.302
+formerly smoked    0.173
+smokes             0.154
+Unknown sigara durumu olanlarin yas<18 orani: 0.44
+yas<18 olanlarin Unknown orani: 0.80
+
+=== H1c: skor sifreli, S tamamen sifreli; saldirgan yalnizca 6 QI'yi goruyor ===
+hedef                    LR-AUC  GBM-AUC
+hypertension              0.789    0.766
+heart_disease             0.854    0.812
+high_glucose(>=140)       0.717    0.693
+smoking=Unknown           0.719    0.681
+ever_smoker|known         0.587    0.561
+current_smoker|known      0.566    0.546
+avg_glucose_level (surekli) R^2 (Ridge): 0.075
+
+=== H2: ek gizlenen QI sayisi m -> hedeflerin ortalama saldiri AUC'si (LR saldirgan) ===
+m=0: manual/random ortalama=0.737  en iyi=0.737 ()  en kotu=0.737 ()
+m=1: manual/random ortalama=0.721  en iyi=0.661 ('age',)  en kotu=0.738 ('work_type',)
+m=2: manual/random ortalama=0.702  en iyi=0.640 ('age', 'ever_married')  en kotu=0.738 ('work_type', 'Residence_type')
+m=3: manual/random ortalama=0.677  en iyi=0.611 ('age', 'gender', 'ever_married')  en kotu=0.738 ('ever_married', 'work_type', 'Residence_type')
+greedy adim 1: gizle age             -> ortalama AUC 0.661
+greedy adim 2: gizle ever_married    -> ortalama AUC 0.640
+greedy adim 3: gizle gender          -> ortalama AUC 0.611
+
+=== H3: savunmasiz modelde uyelik cikarimi AUC (kayip esigi), 5 tohum ===
+LogReg(balanced)     MIA-AUC=0.498±0.006  TPR@FPR1%=0.010  (model test AUC ~0.850)
+RandomForest(derin)  MIA-AUC=0.599±0.010  TPR@FPR1%=0.000  (model test AUC ~0.810)

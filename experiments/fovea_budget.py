@@ -67,7 +67,9 @@ def plot(table: pd.DataFrame, out_path, ncols: int | None = None, panel=(4.6, 3.
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from common.tez_bicim import VERI_TEZ, kaydet, sayi
 
+    tez = ncols is not None  # 2 × 2 tez şekli: Türkçe veri adları, ayraçsız bütçe yazımı, PNG + PDF
     plt.rcParams["font.family"] = ["Segoe UI", "DejaVu Sans"]
     panels = [(v, m) for v in DISPLAY.values() for m in sorted(table.model.unique()) if
               ((table.veri == v) & (table.model == m)).any()]
@@ -95,23 +97,29 @@ def plot(table: pd.DataFrame, out_path, ncols: int | None = None, panel=(4.6, 3.
             g = d[d.butce == b].sort_values("odak_payi")
             if g.empty:
                 continue
+            fmt = sayi(b) if tez else f"{b:,}".replace(",", ".")
             ax.plot(g.odak_payi, g.auc_ort, "-o", color=color, lw=1.2, ms=5, mec=INK["surface"], mew=0.8,
-                    label=f"{b:,}".replace(",", ".") + " değer")
+                    label=fmt + " değer")
         if len(d):  # bütçe başına etiket üst üste biniyordu: yalnız panelin en iyisi (bütçe başına değerler tabloda)
             best = d.loc[d.auc_ort.idxmax()]
             lo, hi = d.auc_ort.min(), d.auc_ort.max()
             ax.set_ylim(lo - 0.06 * (hi - lo), hi + 0.16 * (hi - lo))
-            ax.annotate(f"en iyi {best.auc_ort:.3f} ({best.butce:,} değer)".replace(",", "."),
+            best_b = sayi(best.butce) if tez else f"{best.butce:,}".replace(",", ".")
+            ax.annotate(f"en iyi {best.auc_ort:.3f} ({best_b} değer)",
                         (best.odak_payi, best.auc_ort), xytext=(0, 7), textcoords="offset points", ha="center",
                         fontsize=7, color=INK["secondary"])
         ax.set_xlabel("odak payı (odak değerleri / toplam)", fontsize=8, color=INK["secondary"])
         ax.set_ylabel(f"teşhis AUC (Model {model})", fontsize=8, color=INK["secondary"])
-        ax.set_title(f"{veri}, Model {model}", loc="left", fontsize=9, color=INK["primary"])
+        ax.set_title(f"{VERI_TEZ.get(veri, veri) if tez else veri}, Model {model}", loc="left", fontsize=9,
+                     color=INK["primary"])
         ax.set_xlim(-0.05, 1.05)
         ax.legend(title="bütçe", title_fontsize=7, fontsize=7, frameon=False, labelcolor=INK["secondary"],
                   loc="lower center")
     fig.tight_layout()
-    fig.savefig(out_path, dpi=160, facecolor=INK["surface"])
+    if tez:
+        kaydet(fig, out_path, dpi=200, facecolor=INK["surface"])
+    else:
+        fig.savefig(out_path, dpi=160, facecolor=INK["surface"])
     plt.close(fig)
 
 

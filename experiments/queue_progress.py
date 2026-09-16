@@ -1,10 +1,15 @@
-"""KUYRUK9: kalan işlerin listesi ve ilerleme hesabı (yüzde, kalan süre, tahmini bitiş).
+"""KUYRUK9 ve KUYRUK10: iş listeleri ve ilerleme hesabı (yüzde, kalan süre, tahmini bitiş).
 
-İş listesinin tek kaynağı burasıdır; `experiments/run_fovea_final.ps1` listeyi `--plan` çıktısından okur ve iş sürerken
+KUYRUK9 (`--kuyruk 9`, varsayılan): tezin son deneyleri; `experiments/run_fovea_final.ps1`.
+KUYRUK10 (`--kuyruk 10`): 16 Eyl 2026 inceleme raporunun istediği ek deneyler (S1 görünür piksel normalizasyonu,
+S2 U64 + geometri, S3 en az 3 tekrarlı Π_ROI maliyeti); `experiments/run_revizyon.ps1`.
+
+İş listesinin tek kaynağı burasıdır; PowerShell betikleri listeyi `--plan` çıktısından okur ve iş sürerken
 her 30 saniyede `--poll` ile yüzdeyi alır (pencerenin üstündeki çubuk ve pencere başlığı).
 
 Hesap: iş birimi sonuç tablosundaki satırdır. Kuyruk başında (`--plan`) her işin eksik satırları ve satır başına tahmini
-süresi (aynı veri/yapılandırma/model için daha önce ölçülmüş `sure_s`) results/logs/kuyruk9_plan.json'a yazılır.
+süresi (aynı veri/yapılandırma/model için daha önce ölçülmüş `sure_s`) results/logs/kuyruk{9,10}_plan.json'a yazılır.
+Tablosu olmayan işlerde ilerleme, günlükte belirli bir kalıbı içeren satır sayısının beklenen sayıya oranıdır.
 Betikler var olan satırları atladığı için kuyruk yarıda kesilip yeniden başlatılırsa plan yalnızca kalan işi kapsar.
 Yoklamada tabloya eklenen satırlar sayılır; Adım 1 işlerinde o anki satırın epoch ilerlemesi de eklenir. Geçen gerçek süre
 ile tamamlanan tahmini süre arasındaki oran (0.6–2.5) kalan tahmine uygulanır. Yüzde hiç geri gitmez.
@@ -48,9 +53,10 @@ RAKIP_COLS = ["veri", "yontem", "model", "tohum"]
 
 def norm(v) -> str:
     try:
-        return str(int(float(v)))
+        f = float(v)
     except (TypeError, ValueError):
         return str(v)
+    return str(int(f)) if f.is_integer() else f"{f:g}"  # 0.05 düzeyi 0'a yuvarlanmasın (KUYRUK10 gürültü satırları)
 
 
 def read_rows(path: Path) -> list[dict]:
@@ -81,11 +87,84 @@ def seconds(rows, col="sure_s", **match) -> list[float]:
 
 
 def job(key, label, module, args=(), table=None, cols=None, units=(), est=(), fixed=0.0, epochs=None,
-        optional=False) -> dict:
+        optional=False, log_pattern=None, log_expected=None) -> dict:
     units = [[norm(p) for p in u] for u in units]
     return {"key": key, "label": label, "module": module, "args": [str(a) for a in args],
             "table": str(table) if table else None, "cols": cols, "units": units, "est": [float(e) for e in est],
-            "fixed": float(fixed), "epochs": epochs, "optional": optional}
+            "fixed": float(fixed), "epochs": epochs, "optional": optional, "log_pattern": log_pattern,
+            "log_expected": log_expected}
+
+
+BRAIN = "beyin MR (Cheng)"
+S1_VIEWS_5 = ["tam", "baglam", "baglam_genis40"]              # ilk sürümde 5 tohumla koşulan görüşler
+S1_VIEWS_1 = ["yalniz_roi", "baglam_genis10", "baglam_genis20", "kutu"]
+BASE_COLS = ["veri", "gorus", "tohum"]
+NOISE_COLS = ["veri", "bozulma", "duzey", "gorus", "tohum"]
+PERTURB = [("gauss", 0.05), ("gauss", 0.1), ("gauss", 0.2), ("gauss", 0.4), ("bulanik", 2.0), ("bulanik", 4.0),
+           ("bulanik", 8.0)]  # experiments.attack_noisy_context.PERTURBATIONS
+
+
+def revision_jobs() -> list[dict]:
+    """KUYRUK10: inceleme raporunun (16 Eyl 2026) istediği ek deneyler; kısa işler önce, CPU maliyet ölçümü GPU'dan sonra."""
+    from experiments.attack_noisy_context import PERTURBATIONS
+    from foveahe.data import DISPLAY as display
+    assert display == DISPLAY and display["brain"] == BRAIN, "queue_progress sabitleri asıl modüllerle uyuşmuyor"
+    assert [(k, float(v)) for k, v in PERTURBATIONS] == PERTURB, "bozulma listesi değişmiş"
+
+    base_old, base_new = read_rows(TABLES / "saldiri_B_baglam.csv"), read_rows(TABLES / "saldiri_B_baglam_gnorm.csv")
+    noise_old, noise_new = read_rows(TABLES / "saldiri_B_gurultu.csv"), read_rows(TABLES / "saldiri_B_gurultu_gnorm.csv")
+    models = read_rows(TABLES / "cozum_modeller.csv")
+    jobs = [job("s1_hazirlik", "S1 ham MR onbellegi ve normalizasyon kanali", "experiments.brain_visible_norm",
+                fixed=60)]
+
+    have, units, est = keys(models, MODEL_COLS), [], []
+    for name in ("brain", "covidqu"):
+        for m in MODELS:
+            for s in SEEDS_ALL:
+                if (DISPLAY[name], m, "U64_pencere", str(s)) not in have:
+                    units.append((DISPLAY[name], m, "U64_pencere", s))
+                    est.append(median_or(seconds(models, veri=DISPLAY[name], model=m, temsil="U64"), 60.0))
+    jobs.append(job("s2_u64_geometri", "S2 U64 + geometri referansi (D, D2, C)", "experiments.fovea_models",
+                    ["--dataset", "brain", "covidqu", "--models", *MODELS, "--configs", "U64_pencere", "--seeds",
+                     *SEEDS_ALL, "--device", "cuda"], TABLES / "cozum_modeller.csv", MODEL_COLS, units, est,
+                    fixed=60 if units else 0))
+
+    def view_est(view):
+        return 1.15 * median_or(seconds(base_old, veri=BRAIN, gorus=view), median_or(seconds(base_old, veri=BRAIN), 250.0))
+
+    have = keys(base_new, BASE_COLS)
+    for key, label, views, seeds in (("s1_baglam_5tohum", "S1 baglam saldirisi, 5 tohum", S1_VIEWS_5, SEEDS_ALL),
+                                     ("s1_baglam_tek", "S1 baglam saldirisi, diger gorusler", S1_VIEWS_1, [0])):
+        units = [(BRAIN, v, s) for v in views for s in seeds if (BRAIN, v, str(s)) not in have]
+        jobs.append(job(key, label, "experiments.attack_context",
+                        ["--dataset", "brain", "--norm", "gorunur", "--views", *views, "--seeds", *seeds],
+                        TABLES / "saldiri_B_baglam_gnorm.csv", BASE_COLS, units, [view_est(u[1]) for u in units],
+                        fixed=30 if units else 0, epochs=60))
+
+    jobs.append(job("s1_kok_neden", "S1 Grad-CAM kok neden (bos harita duzeltmesi)", "experiments.root_cause",
+                    ["--dataset", "covidqu", "brain", "--norm", "gorunur", "--skip-ablation"], fixed=420,
+                    log_pattern="epoch ", log_expected=5 + 12))
+    jobs.append(job("s1_savunma", "S1 savunma egrisi (beyin)", "experiments.defense_expansion",
+                    ["--dataset", "brain", "--norm", "gorunur"], fixed=1350, log_pattern="[savunma:brain]",
+                    log_expected=34))
+
+    have, units, est = keys(noise_new, NOISE_COLS), [], []
+    for kind, level in PERTURB:
+        for view in ("baglam", "tam"):
+            if (BRAIN, kind, norm(level), view, "0") not in have:
+                units.append((BRAIN, kind, level, view, 0))
+                est.append(1.1 * median_or(seconds(noise_old, veri=BRAIN, gorus=view), 200.0))
+    jobs.append(job("s1_gurultu", "S1 bozuk baglam saldirisi (beyin)", "experiments.attack_noisy_context",
+                    ["--dataset", "brain", "--norm", "gorunur", "--seeds", 0], TABLES / "saldiri_B_gurultu_gnorm.csv",
+                    NOISE_COLS, units, est, fixed=30 if units else 0))
+
+    jobs.append(job("s3_piroi_maliyet", "S3 Pi_ROI maliyeti (en az 3 tekrar)", "experiments.piroi_benchmark",
+                    fixed=1400, log_pattern="[maliyet]", log_expected=32))
+    jobs.append(job("s3_savunma_maliyet", "S3 savunma hiz kazanci ve tez sekilleri", "experiments.defense_expansion",
+                    ["--recost"], fixed=40))
+    jobs.append(job("ozet_pareto", "Birlesik ozet tablo ve Pareto sekilleri", "experiments.fovea_pareto", fixed=40))
+    jobs.append(job("ozet_md", "OZET.md", "experiments.summarize", fixed=20))
+    return jobs
 
 
 def real_jobs() -> list[dict]:
@@ -162,8 +241,8 @@ def fake_jobs() -> list[dict]:
             job("deneme_yok", "Deneme: olmayan betik", "experiments.boyle_bir_betik_yok", fixed=1, optional=True)]
 
 
-def plan_path(deneme: bool) -> Path:
-    return LOGS / ("kuyruk9_deneme_plan.json" if deneme else "kuyruk9_plan.json")
+def plan_path(deneme: bool, kuyruk: int = 9) -> Path:
+    return LOGS / (f"kuyruk{kuyruk}_deneme_plan.json" if deneme else f"kuyruk{kuyruk}_plan.json")
 
 
 def dur(s: float) -> str:
@@ -171,12 +250,12 @@ def dur(s: float) -> str:
     return f"{h} sa {m:02d} dk" if h else f"{m} dk"
 
 
-def make_plan(deneme: bool) -> None:
-    jobs = fake_jobs() if deneme else real_jobs()
+def make_plan(deneme: bool, kuyruk: int = 9) -> None:
+    jobs = fake_jobs() if deneme else (revision_jobs() if kuyruk == 10 else real_jobs())
     for i, j in enumerate(jobs):
         j["idx"] = i
     plan = {"baslangic": time.time(), "jobs": jobs}
-    path = plan_path(deneme)
+    path = plan_path(deneme, kuyruk)
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps(plan, ensure_ascii=False, indent=1), encoding="utf-8")
     tmp.replace(path)
@@ -204,8 +283,17 @@ def row_fraction(log: Path, epoch_lines: int) -> float:
     return min(0.98, n / epoch_lines)
 
 
-def poll(deneme: bool, idx: int, done_jobs: set, log: str | None) -> str:
-    path = plan_path(deneme)
+def log_fraction(log: Path, pattern: str, expected: int) -> float:
+    try:
+        with open(log, encoding="utf-8", errors="replace") as f:
+            n = sum(1 for line in f if pattern in line)
+    except OSError:
+        return 0.0
+    return min(0.98, n / max(1, expected))
+
+
+def poll(deneme: bool, idx: int, done_jobs: set, log: str | None, kuyruk: int = 9) -> str:
+    path = plan_path(deneme, kuyruk)
     plan = json.loads(path.read_text(encoding="utf-8"))
     jobs, now = plan["jobs"], time.time()
     total = sum(sum(j["est"]) + j["fixed"] for j in jobs) or 1.0
@@ -220,6 +308,8 @@ def poll(deneme: bool, idx: int, done_jobs: set, log: str | None) -> str:
         if cur["epochs"] and log and n_done < n_all:
             nxt = next(e for u, e in zip(cur["units"], cur["est"]) if tuple(u) not in present)
             done += nxt * row_fraction(Path(log), cur["epochs"])
+    elif idx not in done_jobs and cur.get("log_pattern") and log:
+        done += cur["fixed"] * log_fraction(Path(log), cur["log_pattern"], cur["log_expected"])
     state_path = path.with_name(path.stem + "_son.json")
     try:
         state = json.loads(state_path.read_text(encoding="utf-8"))
@@ -237,7 +327,7 @@ def poll(deneme: bool, idx: int, done_jobs: set, log: str | None) -> str:
     eta_txt = f"{eta:%H:%M}" if eta.date() == datetime.fromtimestamp(now).date() else f"yarin {eta:%H:%M}"
     label = f"is {idx + 1}/{len(jobs)}: {cur['label']}" + (f" ({n_done}/{n_all} satir)" if n_all else "")
     status = f"%{pct:.1f} | kalan ~{dur(remaining)} | bitis ~{eta_txt} | {label}"
-    return "\t".join([str(int(pct)), status, f"%{pct:.0f} | bitis ~{eta_txt} | KUYRUK9", "ILERLEME " + status])
+    return "\t".join([str(int(pct)), status, f"%{pct:.0f} | bitis ~{eta_txt} | KUYRUK{kuyruk}", "ILERLEME " + status])
 
 
 def fake_job(units: int, table: str | None, code: int) -> None:
@@ -261,6 +351,7 @@ def main():
     ap.add_argument("--plan", action="store_true")
     ap.add_argument("--poll", action="store_true")
     ap.add_argument("--deneme", action="store_true", help="kuyruk betiğini sınamak için kısa sahte işler")
+    ap.add_argument("--kuyruk", type=int, choices=[9, 10], default=9)
     ap.add_argument("--job", type=int, default=0)
     ap.add_argument("--done", default="")
     ap.add_argument("--log", default=None)
@@ -271,10 +362,10 @@ def main():
     if args.sahte_is is not None:
         fake_job(args.sahte_is, args.sahte_tablo, args.cikis)
     elif args.plan:
-        make_plan(args.deneme)
+        make_plan(args.deneme, args.kuyruk)
     elif args.poll:
         done = {int(x) for x in args.done.split(",") if x.strip()}
-        print(poll(args.deneme, args.job, done, args.log))
+        print(poll(args.deneme, args.job, done, args.log, args.kuyruk))
 
 
 if __name__ == "__main__":
