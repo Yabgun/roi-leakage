@@ -62,7 +62,8 @@ def attach(df: pd.DataFrame, plan: pd.DataFrame) -> pd.DataFrame:
                       left_on="yapilandirma", right_on="temsil", how="inner").drop(columns="temsil")
 
 
-def plot(table: pd.DataFrame, out_path):
+def plot(table: pd.DataFrame, out_path, ncols: int | None = None, panel=(4.6, 3.9)):
+    """ncols verilirse paneller satırlara bölünür (tez sayfasında okunur yazı için 2 × 2)."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -72,10 +73,14 @@ def plot(table: pd.DataFrame, out_path):
               ((table.veri == v) & (table.model == m)).any()]
     if not panels:
         return
-    fig, axes = plt.subplots(1, len(panels), figsize=(4.6 * len(panels), 3.9), squeeze=False)
+    ncols = ncols or len(panels)
+    nrows = -(-len(panels) // ncols)
+    fig, axes = plt.subplots(nrows, ncols, figsize=(panel[0] * ncols, panel[1] * nrows), squeeze=False)
     fig.patch.set_facecolor(INK["surface"])
     budgets = sorted(table.butce.unique())
-    for ax, (veri, model) in zip(axes[0], panels):
+    for ax in axes.flat[len(panels):]:
+        ax.set_visible(False)
+    for ax, (veri, model) in zip(axes.flat, panels):
         ax.set_facecolor(INK["surface"])
         for side in ("top", "right"):
             ax.spines[side].set_visible(False)
@@ -119,6 +124,7 @@ def main():
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--plot-only", action="store_true")
     ap.add_argument("--quick", action="store_true", help="tek bütçe (2048), hızlı eğitim")
+    ap.add_argument("--tez", action="store_true", help="tez sayfası için ek 2 × 2 şekil (_tez.png)")
     args = ap.parse_args()
     tag = "_butce_hizli" if args.quick else "_butce"
     budgets = [2048] if args.quick else args.budgets
@@ -136,6 +142,8 @@ def main():
         write_markdown_table(best[["veri", "model", "butce", "yapilandirma", "odak_payi", "auc_ort"]],
                              config.TABLES / f"cozum{tag}_en_iyi.md", floatfmt="{:.4f}")
         plot(table, config.FIGURES / f"cozum{tag}.png")
+        if args.tez:
+            plot(table, config.FIGURES / f"cozum{tag}_tez.png", ncols=2, panel=(3.3, 3.0))
         print(best.round(4).to_string(index=False))
 
 

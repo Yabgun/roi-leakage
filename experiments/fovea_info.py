@@ -223,8 +223,11 @@ def plot_examples(ds: Dataset):
     plt.close(fig)
 
 
-def plot_curve(df: pd.DataFrame, tag: str = ""):
-    """Şifrelenen değer sayısı ↔ teşhis AUC; tam görüntü, ölçüt sınırı ve tam + ROI penceresi referans çizgileri."""
+def plot_curve(df: pd.DataFrame, tag: str = "", stacked: bool = False):
+    """Şifrelenen değer sayısı ↔ teşhis AUC; tam görüntü, ölçüt sınırı ve tam + ROI penceresi referans çizgileri.
+
+    stacked: veri kümeleri alt alta (tez sayfasında okunur yazı için), çıktı adı `_tez` ekli.
+    """
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -233,9 +236,11 @@ def plot_curve(df: pd.DataFrame, tag: str = ""):
     plt.rcParams["font.family"] = ["Segoe UI", "DejaVu Sans"]
     s = summarize(df)
     datasets = [v for v in DISPLAY.values() if v in set(s.veri)]
-    fig, axes = plt.subplots(1, len(datasets), figsize=(6.4 * len(datasets), 4.6), squeeze=False)
+    shape = (len(datasets), 1) if stacked else (1, len(datasets))
+    size = (6.4, 4.4 * len(datasets)) if stacked else (6.4 * len(datasets), 4.6)
+    fig, axes = plt.subplots(*shape, figsize=size, squeeze=False)
     fig.patch.set_facecolor(INK["surface"])
-    for ax, veri in zip(axes[0], datasets):
+    for ax, veri in zip(axes.flat, datasets):
         _style(ax)
         d = s[(s.veri == veri) & (s.yapilandirma != "sabit")].copy()
         specs = d.yapilandirma.map(FoveaSpec.parse)
@@ -321,7 +326,8 @@ def plot_curve(df: pd.DataFrame, tag: str = ""):
         ax.set_title(veri, loc="left", fontsize=9, color=INK["primary"])
         ax.legend(loc="lower right", fontsize=7, frameon=False, labelcolor=INK["secondary"])
     fig.tight_layout()
-    fig.savefig(config.FIGURES / f"cozum_bilgi_egrisi{tag}.png", dpi=160, facecolor=INK["surface"])
+    fig.savefig(config.FIGURES / f"cozum_bilgi_egrisi{tag}{'_tez' if stacked else ''}.png", dpi=160,
+                facecolor=INK["surface"])
     plt.close(fig)
 
 
@@ -364,6 +370,7 @@ def main():
     ap.add_argument("--quick", action="store_true", help="küçük alt küme, 1 epoch, 4 yapılandırma")
     ap.add_argument("--build-only", action="store_true", help="yalnızca katman önbelleği ve örnek şekilleri")
     ap.add_argument("--plot-only", action="store_true")
+    ap.add_argument("--tez", action="store_true", help="tez sayfası için ek alt alta şekil (_tez.png)")
     args = ap.parse_args()
     tag = "_hizli" if args.quick else ""
     out_csv = config.TABLES / f"cozum_bilgi{tag}.csv"
@@ -379,6 +386,8 @@ def main():
         summary = summarize(df)
         write_markdown_table(summary, out_csv.with_suffix(".md"), floatfmt="{:.4f}")
         plot_curve(df, tag)
+        if args.tez:
+            plot_curve(df, tag, stacked=True)
         print(summary.round(4).to_string(index=False))
 
 
