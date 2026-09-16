@@ -110,7 +110,11 @@ def main():
              ("Adım 5a — rakip: şifreli özet (HETAL tarzı)", ["cozum_rakipler.md"], []),
              ("Adım 5b — rakip: bozuk açık bağlam (Bi-CryptoNets tarzı)", ["saldiri_B_gurultu.md"], []),
              ("Adım 6 — birleşik özet: hız × doğruluk × sızıntı", ["cozum_ozet.md"],
-              ["cozum_pareto_brain.png", "cozum_pareto_covidqu.png"])]
+              ["cozum_pareto_brain.png", "cozum_pareto_covidqu.png"]),
+             ("Bonus — bütçe duyarlı odak: sabit şifreli değer bütçesinde odak payı", ["cozum_butce_en_iyi.md"],
+              ["cozum_butce.png"]),
+             ("Bonus — harici derlemede genelleme (Kaggle CXR, kopyalar çıkarılmış)", ["cozum_genelleme.md"],
+              ["cozum_genelleme.png"])]
     cozum = [(t, [m for m in f if (config.TABLES / m).exists()], [g for g in p if (config.FIGURES / g).exists()])
              for t, f, p in cozum]
     if any(f or p for _, f, p in cozum):
