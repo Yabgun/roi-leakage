@@ -190,11 +190,6 @@ def plot(df: pd.DataFrame, name: str):
             dy[i] = (k - (len(idx) - 1) / 2) * 0.05 * span
     sc = ax.scatter(d.hiz_kazanci, d.teshis_auc + dy, c=d.saldirgan_auc, cmap=cmap, norm=norm, s=110,
                     edgecolor=INK["surface"], linewidths=1.2, zorder=3)
-    for i, (_, r) in enumerate(d.iterrows()):
-        up = dy[i] >= 0
-        ax.annotate(short(r.yontem), (r.hiz_kazanci, r.teshis_auc + dy[i]), xytext=(0, 11 if up else -11),
-                    textcoords="offset points", ha="center", va="bottom" if up else "top", fontsize=7,
-                    color=INK["primary"])
     dodged = any(len(v) > 1 for v in clusters.values())
     ax.set_xscale("log", base=2)
     ticks = [1, 2, 4, 8, 16, 32]
@@ -218,6 +213,36 @@ def plot(df: pd.DataFrame, name: str):
     if dodged:
         fig.text(0.995, 0.01, "not: aynı doğrulukta çakışan noktalara yalnızca çizimde küçük dikey kaydırma uygulandı",
                  ha="right", fontsize=6.5, color=INK["muted"])
+    # Etiketler yerleşim kesinleşince: her nokta için sırayla 8 konum denenir; hiçbir işarete, önceki etikete ya da eksen
+    # dışına taşmayan ilk konum seçilir (5 tohumda yakınlaşan noktalar sabit "üste yaz" kuralıyla çakışıyordu).
+    from matplotlib.transforms import Bbox
+    renderer = fig.canvas.get_renderer()
+    xy = np.column_stack([d.hiz_kazanci.to_numpy(), (d.teshis_auc + dy).to_numpy()])
+    radius = np.sqrt(110) / 2 * fig.dpi / 72 + 2
+    taken = [Bbox.from_extents(px - radius, py - radius, px + radius, py + radius)
+             for px, py in ax.transData.transform(xy)]
+    frame = ax.get_window_extent(renderer)
+    spots = [((0, 11), "center", "bottom"), ((0, -11), "center", "top"), ((10, 0), "left", "center"),
+             ((-10, 0), "right", "center"), ((8, 8), "left", "bottom"), ((-8, 8), "right", "bottom"),
+             ((8, -8), "left", "top"), ((-8, -8), "right", "top")]
+    for i, (_, r) in enumerate(d.iterrows()):
+        order = spots if dy[i] >= 0 else [spots[1], spots[0]] + spots[2:]
+        chosen = None
+        for offset, ha, va in order:
+            ann = ax.annotate(short(r.yontem), xy[i], xytext=offset, textcoords="offset points", ha=ha, va=va,
+                              fontsize=7, color=INK["primary"])
+            box = ann.get_window_extent(renderer)
+            inside = frame.x0 <= box.x0 and box.x1 <= frame.x1 and frame.y0 <= box.y0 and box.y1 <= frame.y1
+            if inside and not any(box.overlaps(t) for t in taken):
+                chosen = box
+                break
+            ann.remove()
+        if chosen is None:  # hiçbir konum boş değilse ilk tercih
+            offset, ha, va = order[0]
+            ann = ax.annotate(short(r.yontem), xy[i], xytext=offset, textcoords="offset points", ha=ha, va=va,
+                              fontsize=7, color=INK["primary"])
+            chosen = ann.get_window_extent(renderer)
+        taken.append(chosen)
     fig.savefig(config.FIGURES / f"cozum_pareto_{name}.png", dpi=160, facecolor=INK["surface"])
     plt.close(fig)
 

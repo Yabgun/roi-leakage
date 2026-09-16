@@ -92,9 +92,13 @@ def plot(table: pd.DataFrame, out_path):
                 continue
             ax.plot(g.odak_payi, g.auc_ort, "-o", color=color, lw=1.2, ms=5, mec=INK["surface"], mew=0.8,
                     label=f"{b:,}".replace(",", ".") + " değer")
-            best = g.loc[g.auc_ort.idxmax()]
-            ax.annotate(f"{best.auc_ort:.3f}", (best.odak_payi, best.auc_ort), xytext=(0, 6), textcoords="offset points",
-                        ha="center", fontsize=7, color=INK["secondary"])
+        if len(d):  # bütçe başına etiket üst üste biniyordu: yalnız panelin en iyisi (bütçe başına değerler tabloda)
+            best = d.loc[d.auc_ort.idxmax()]
+            lo, hi = d.auc_ort.min(), d.auc_ort.max()
+            ax.set_ylim(lo - 0.06 * (hi - lo), hi + 0.16 * (hi - lo))
+            ax.annotate(f"en iyi {best.auc_ort:.3f} ({best.butce:,} değer)".replace(",", "."),
+                        (best.odak_payi, best.auc_ort), xytext=(0, 7), textcoords="offset points", ha="center",
+                        fontsize=7, color=INK["secondary"])
         ax.set_xlabel("odak payı (odak değerleri / toplam)", fontsize=8, color=INK["secondary"])
         ax.set_ylabel(f"teşhis AUC (Model {model})", fontsize=8, color=INK["secondary"])
         ax.set_title(f"{veri}, Model {model}", loc="left", fontsize=9, color=INK["primary"])

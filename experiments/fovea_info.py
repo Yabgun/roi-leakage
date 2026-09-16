@@ -246,8 +246,9 @@ def plot_curve(df: pd.DataFrame, tag: str = ""):
         ax.grid(axis="y", color=INK["grid"], lw=0.5)
         ax.set_axisbelow(True)
         ax.axvline(SLOTS, color=INK["axis"], lw=0.7)
-        ax.text(SLOTS * 1.03, 0.5, "1 ciphertext sınırı (8.192 slot)", transform=ax.get_xaxis_transform(),
-                rotation=90, ha="left", va="center", fontsize=7, color=INK["muted"])
+        # eksenin üstünde: veri etiketleriyle (ör. U90) çakışmasın
+        ax.text(SLOTS, 1.01, "1 ciphertext (8.192 slot)", transform=ax.get_xaxis_transform(), ha="center",
+                va="bottom", fontsize=7, color=INK["muted"])
         vals = d.auc_ort.to_numpy()
         lo, hi = float(vals.min()), float(vals.max())
         pad = max(5e-4, 0.12 * (hi - lo))
