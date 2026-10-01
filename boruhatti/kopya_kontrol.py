@@ -163,8 +163,11 @@ def etki_analizi() -> None:
             satir[f"fark ({a})"] = float(np.mean(kalan[a]) - np.mean(tum_aucs))
         sonuc.append(satir)
     df = pd.DataFrame(sonuc)
+    sayilar = [c for c in df if c.startswith("cikarilan")]  # COVID satırlarında boş olduğu için ondalıklı görünmesin
+    df = df.assign(**{c: df[c].astype("Int64") for c in sayilar})
     df.to_csv(config.TABLES / "kopya_etki.csv", index=False)
-    write_markdown_table(df, config.TABLES / "kopya_etki.md")
+    write_markdown_table(df.assign(**{c: df[c].map(lambda v: "" if pd.isna(v) else str(int(v))) for c in sayilar}),
+                         config.TABLES / "kopya_etki.md")
     with pd.option_context("display.width", 250, "display.max_columns", 20):
         print(df.round(4).to_string(index=False))
 

@@ -56,7 +56,7 @@ değildir; ağırlıklar ayrıca yayımlanır (README).
 
 Makalenin ana modelleri bu bilgisayarda (RTX 2070, 8 GB) `boruhatti.egit` ile yeniden eğitildi; 12 eğitim toplam yaklaşık
 27 dk sürdü. Aynısı `python calistir.py --kademe 1` ile yapılır. Karşılaştırmalar `boruhatti.degerlendir`, kabul
-kararları `boruhatti.kontrol` ile verilir (`results/boruhatti/kontrol.csv`: 15 denetimin 15'i TUTTU).
+kararları `boruhatti.kontrol` ile verilir (`results/boruhatti/kontrol.csv`: 19 denetimin 19'u TUTTU).
 
 **Bağlam saldırganı, makale protokolü (tohum 0).** Ağırlıklar `modeller/saldirgan_<veri>_<görüş>_tez_s0/`.
 
@@ -122,6 +122,52 @@ Yorum:
   Beyin MR'da 1 843 eğitim görüntüsü vardır, COVID-QU-Ex'te 21 715. En büyük fark tam görüntü modelindedir (U512):
   262 144 girdiye karşılık 1 843 eğitim görüntüsü. FoveaHE temsilinde (1 283 değer) fark daha küçüktür ve doğrulama
   AUC'si daha yüksektir: 0.947'ye karşı 0.887. Bu bulgu makaledeki Tablo V ile tutarlıdır (0.948'e karşı 0.881).
+
+## Sonuçlar ezbere mi dayanıyor?
+
+Hayır. Makaledeki bütün sayılar modelin eğitimde ve model seçiminde görmediği test görüntülerinden ölçülür. Beyin MR'da
+bölmeler hasta düzeyindedir (resmi `cvind.mat` katları). COVID-QU-Ex'te veri kümesinin resmi Train / Val / Test
+bölmesi kullanılır. Bunun üstüne dört denetim yapıldı.
+
+**1. Etiket karıştırma (permütasyon) testi** (`python -m boruhatti.ezber_denetimi`; `results/tables/ezber_denetimi.md`,
+her koşu `ezber_denetimi_kosular.csv`). Modelin eğitimde gördüğü etiketler rastgele karıştırılır. Görüntüler, model,
+ayarlar ve bölmeler makaledekiyle aynıdır. Böyle eğitilen bir model etiketleri ancak ezberleyebilir. Test görüntüleri
+gerçek etiketleriyle ölçülür ve bu farklı karıştırmalarla tekrarlanır.
+
+| Veri | Model | Test | Gerçek etiketle test AUC | Karıştırma | Karışık etiketle eğitim doğruluğu | Karışık etiketle test AUC: ort. (en düşük–en yüksek) | Fark / std |
+|---|---|---|---|---|---|---|---|
+| Beyin MR | Bağlam saldırganı (ResNet-18), Π_ROI görüşü | kat 1 (542) | 0.996 | 5 | 0.992 (çoğunluk sınıfı 0.468) | 0.523 (0.488–0.592) | 11.4 |
+| COVID-QU-Ex | Bağlam saldırganı (ResNet-18), Π_ROI görüşü | resmi Test (6788) | 0.993 | 3 | 0.391 (çoğunluk sınıfı 0.352) | 0.493 (0.463–0.513) | 18.7 |
+| Beyin MR | FoveaHE F32_G16, Model D | kat 1 (542) | 0.930 | 20 | 0.445 (çoğunluk sınıfı 0.457) | 0.551 (0.434–0.716) | 4.6 |
+| COVID-QU-Ex | FoveaHE F32_G16, Model D2 | resmi Test (6788) | 0.952 | 20 | 0.362 (çoğunluk sınıfı 0.353) | 0.507 (0.448–0.569) | 13.8 |
+
+"Fark / std": gerçek etiketli AUC ile karışık koşuların ortalaması arasındaki farkın, karışık koşuların standart
+sapmasına oranı. Gerçek etiketli değer makaledeki kayıtlı tahminlerden aynı test görüntülerinde hesaplanmıştır.
+
+- Dört modelin hepsinde gerçek etiketli test AUC'si, karıştırılmış etiketli bütün koşuların üstündedir.
+- Beyin MR saldırganı rastgele etiketleri de %99 doğrulukla ezberleyebiliyor, ama bu modellerin test AUC'si 0.49–0.59'da
+  kalıyor. Gerçek etiketle eğitilen aynı model 0.996 alıyor. Model ezberleyebilir; makaledeki test başarısı ise ezberden
+  değil, görüntü ile teşhis arasındaki gerçek ilişkiden gelir.
+- Karıştırılmış etiketli tek bir koşunun AUC'si 0.5'ten iki yönde de sapabilir (beyin MR FoveaHE: 0.43–0.72). Rastgele
+  öğrenilen ağırlık yönü, görüntülerdeki sınıfla ilişkili güçlü yapıya (ör. tümörün büyüklüğü ve konumu) rastgele denk
+  gelebilir. Karşılaştırma bu yüzden tek koşuyla değil, tekrarların dağılımıyla yapılır.
+
+**2. Kopya ve aynı hasta denetimi** (`results/tables/kopya_etki.md`). Eğitimde neredeyse aynısı bulunan test
+görüntüleri çıkarılınca AUC en çok 0.0007 değişir (COVID-QU-Ex'te 79, beyin MR'da 31 görüntü). Beyin MR'da hasta
+kimliği yalnız son harfiyle ayrılan kesitler (ör. MR024780B / MR024780E; aynı kişinin farklı çekimleri olabilir) de
+çıkarılınca (738 kesit) bağlam saldırganının AUC'si 0.9759'dan 0.9697'ye, FoveaHE Model D'ninki 0.9479'dan 0.9395'e
+iner. Bulgular değişmez.
+
+**3. Dış veri** (makale, gerçekçilik testi). COVID-QU-Ex'te eğitilen saldırgan, hiç görmediği ve kopyaları çıkarılmış
+Kaggle görüntülerinde akciğerler gizliyken normal ile pnömoniyi AUC 0.998 ile ayırır. FoveaHE modelleri yeniden eğitilmeden Kaggle'ın 1 767
+görüntüsünde değerlendirildiğinde temsiller arasındaki sıralama korunur. Makalede belirtildiği gibi iki küme aynı çocuk
+hasta kaynağını paylaştığından bu test tamamen bağımsız bir hastane testi değildir.
+
+**4. Eğitim eğrileri** (yukarıdaki bölüm). Doğrulama kaybı eğitim boyunca yükselmez; şifreli modeller erken
+durdurmayla seçilen epoch'u kullanır.
+
+Makalenin kendi sınırlılığı olarak: COVID-QU-Ex birden çok kaynaktan derlendiği için çekim koşullarına bağlı karıştırıcı
+etkenler mutlak AUC değerlerini yükseltmiş olabilir. Bu, ezberle değil veri kümesinin yapısıyla ilgilidir.
 
 ## Başarı ölçüleri
 

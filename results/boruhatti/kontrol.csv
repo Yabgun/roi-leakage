@@ -13,4 +13,8 @@ FoveaHE yeniden eğitim: foveahe_C_beyin_F32_G16_izleme_s0,TUTTU,"AUC 0.9408; ma
 FoveaHE yeniden eğitim: foveahe_D2_covidqu_F32_G16_izleme_s0,TUTTU,"AUC 0.9517; makaledeki aynı tohum ve bölmenin modeli 0.9517 (fark +0.0000, tahmin uyumu %100.0, ağırlıklar bit bit aynı); makaledeki 5 tohum aynı bölmede 0.9517–0.9563 (pay ±0.005)"
 FoveaHE yeniden eğitim: foveahe_D_beyin_U512_izleme_s0,TUTTU,"AUC 0.8914; makaledeki aynı tohum ve bölmenin modeli 0.8914 (fark +0.0000, tahmin uyumu %100.0, ağırlıklar bit bit aynı); makaledeki 5 tohum aynı bölmede 0.8660–0.8978 (pay ±0.005)"
 FoveaHE yeniden eğitim: foveahe_D2_covidqu_U256_izleme_s0,TUTTU,"AUC 0.9465; makaledeki aynı tohum ve bölmenin modeli 0.9465 (fark +0.0000, tahmin uyumu %100.0, ağırlıklar bit bit aynı); makaledeki 5 tohum aynı bölmede 0.9442–0.9470 (pay ±0.005)"
+"Ezber denetimi (etiket karıştırma): Beyin MR, Bağlam saldırganı (ResNet-18), Π_ROI görüşü",TUTTU,"gerçek etiketle test AUC 0.9958; karıştırılmış etiketle 5 koşu: ort. 0.5235, en yüksek 0.5923"
+"Ezber denetimi (etiket karıştırma): COVID-QU-Ex, Bağlam saldırganı (ResNet-18), Π_ROI görüşü",TUTTU,"gerçek etiketle test AUC 0.9933; karıştırılmış etiketle 3 koşu: ort. 0.4932, en yüksek 0.5127"
+"Ezber denetimi (etiket karıştırma): Beyin MR, FoveaHE F32_G16, Model D",TUTTU,"gerçek etiketle test AUC 0.9300; karıştırılmış etiketle 20 koşu: ort. 0.5508, en yüksek 0.7164"
+"Ezber denetimi (etiket karıştırma): COVID-QU-Ex, FoveaHE F32_G16, Model D2",TUTTU,"gerçek etiketle test AUC 0.9517; karıştırılmış etiketle 20 koşu: ort. 0.5075, en yüksek 0.5687"
 "Kayıtlı tahminlerden makale tabloları (Tablo II, III, V, VIII ve metin)",TUTTU,111/111 değer

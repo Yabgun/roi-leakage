@@ -29,4 +29,5 @@ def kaydet(fig, png_path, dpi: int = 200, **kwargs) -> None:
     from pathlib import Path
     png_path = Path(png_path)
     fig.savefig(png_path.with_suffix(".png"), dpi=dpi, **kwargs)
-    fig.savefig(png_path.with_suffix(".pdf"), **kwargs)
+    # Oluşturma tarihi yazılmaz: aynı içerik aynı baytları verir, yeniden üretimde `git diff` yalnız gerçek farkı gösterir
+    fig.savefig(png_path.with_suffix(".pdf"), metadata={"CreationDate": None}, **kwargs)

@@ -1,0 +1,6 @@
+| veri | model | test_bolmesi | egitim_n | test_n | gercek_etiketle_test_auc | karistirma_sayisi | karisik_egitim_dogrulugu_ort | cogunluk_sinifi_orani | karisik_test_auc_ort | karisik_test_auc_std | karisik_test_auc_en_dusuk | karisik_test_auc_en_yuksek | z | p | sonuc | sure_s |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Beyin MR | Bağlam saldırganı (ResNet-18), Π_ROI görüşü | kat 1 | 2522 | 542 | 0.9958 | 5 | 0.9920 | 0.4683 | 0.5235 | 0.0413 | 0.4877 | 0.5923 | 11.4467 | 0.1667 | gerçek etiketli sonuç bütün karıştırılmış koşuların üstünde | 217 |
+| COVID-QU-Ex | Bağlam saldırganı (ResNet-18), Π_ROI görüşü | resmi Test | 27132 | 6788 | 0.9933 | 3 | 0.3908 | 0.3524 | 0.4932 | 0.0267 | 0.4628 | 0.5127 | 18.7382 | 0.2500 | gerçek etiketli sonuç bütün karıştırılmış koşuların üstünde | 517 |
+| Beyin MR | FoveaHE F32_G16, Model D | kat 1 | 1843 | 542 | 0.9300 | 20 | 0.4450 | 0.4574 | 0.5508 | 0.0833 | 0.4345 | 0.7164 | 4.5542 | 0.0476 | gerçek etiketli sonuç bütün karıştırılmış koşuların üstünde | 40 |
+| COVID-QU-Ex | FoveaHE F32_G16, Model D2 | resmi Test | 21715 | 6788 | 0.9517 | 20 | 0.3622 | 0.3527 | 0.5075 | 0.0322 | 0.4479 | 0.5687 | 13.8005 | 0.0476 | gerçek etiketli sonuç bütün karıştırılmış koşuların üstünde | 383 |
