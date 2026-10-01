@@ -47,9 +47,15 @@ def _sha256(p: Path) -> str:
     return h.hexdigest()
 
 
+def veri_dosyasi_mi(p: Path, kok: Path) -> bool:
+    """İndirme araçlarının işaretleri veri değildir: `.extracted` ve kagglehub'ın indirdiği klasöre bıraktığı
+    `.complete/` klasörü (adı nokta ile başlayan her parça)."""
+    return p.is_file() and not any(parca.startswith(".") for parca in p.relative_to(kok).parts)
+
+
 def parmak_izi(kok: Path, altlar: list[str] | None = None) -> dict:
     """Dosya sayısı, toplam bayt ve "göreli_yol<TAB>bayt<TAB>sha256" satırlarının (yola göre sıralı) SHA-256 özeti."""
-    dosyalar = [p for alt in (altlar or [""]) for p in (kok / alt).rglob("*") if p.is_file() and p.name != ISARET]
+    dosyalar = [p for alt in (altlar or [""]) for p in (kok / alt).rglob("*") if veri_dosyasi_mi(p, kok)]
     dosyalar.sort(key=lambda p: p.relative_to(kok).as_posix())
     with ThreadPoolExecutor(4) as ex:
         ozetler = list(ex.map(_sha256, dosyalar))
