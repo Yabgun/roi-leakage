@@ -17,9 +17,13 @@ Denetim (`boruhatti.kontrol`) yalnız bu koşuda üretilen sonuçları sayar; gi
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 import time
+
+# Çıktı dosyaya yönlendirilse de Türkçe ve Π, → gibi karakterler yazılabilsin (Windows'ta varsayılan cp1254 değil UTF-8)
+ORTAM = {**os.environ, "PYTHONIOENCODING": "utf-8"}
 
 EGITIM = [
     ["--model", "saldirgan", "--veri", "beyin", "--gorus", "baglam", "--protokol", "tez"],
@@ -44,7 +48,7 @@ def calistir(modul: str, *arg: str, zorunlu: bool = True) -> int:
     komut = [sys.executable, "-m", modul, *arg]
     print(f"\n=== {' '.join(komut[2:])} ===", flush=True)
     t0 = time.perf_counter()
-    r = subprocess.run(komut)
+    r = subprocess.run(komut, env=ORTAM)
     print(f"--- {modul}: çıkış {r.returncode}, {time.perf_counter() - t0:.0f} s", flush=True)
     if r.returncode and zorunlu:
         sys.exit(f"{modul} başarısız oldu; yukarıdaki iletiye bakın.")
@@ -52,6 +56,8 @@ def calistir(modul: str, *arg: str, zorunlu: bool = True) -> int:
 
 
 def main():
+    for akis in (sys.stdout, sys.stderr):  # alt süreçlerle aynı kodlama: dosyaya yönlendirilen kayıt tek parça UTF-8
+        akis.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--kademe", type=int, default=0, choices=[0, 1, 2])
     ap.add_argument("--wandb-kapali", action="store_true", help="eğitim eğrilerini yalnız yerelde kaydet")
