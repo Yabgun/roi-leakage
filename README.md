@@ -31,12 +31,15 @@ py -3.13 -m venv .venv
 
 | Kademe | Komut | Ne yapar | Süre (RTX 2070) |
 |---|---|---|---|
-| 0 | `calistir.py --kademe 0` | Veriyi indirip doğrular, ön işler, makaledeki modelleri indirip test eder, 27 görüntüde gerçek CKKS şifreli çıkarım yapar, makale tablolarını kayıtlı tahminlerden yeniden hesaplar, sonuçları denetler. Eğitim yoktur. | (ölçülecek) |
-| 1 | `calistir.py --kademe 1` | Kademe 0 + makalenin ana modellerini bu bilgisayarda yeniden eğitir (12 eğitim, eğitim eğrileriyle) + ezber denetimi (etiket karıştırma). Yeni modeller makaledeki modellerle karşılaştırılır. | Kademe 0 + ~46 dk |
+| 0 | `calistir.py --kademe 0` | Veriyi indirip doğrular, makaledeki modelleri indirir, ön işler, modelleri test eder, 27 görüntüde gerçek CKKS şifreli çıkarım yapar, makale tablolarını kayıtlı tahminlerden yeniden hesaplar, sonuçları denetler. Eğitim yoktur. | ~50 dk: veri indirme 20, model indirme 8, ön işleme 13, kopya taraması 4, değerlendirme 3 (indirme süresi bağlantıya bağlıdır) |
+| 1 | `calistir.py --kademe 1` | Kademe 0 + makalenin ana modellerini bu bilgisayarda yeniden eğitir (12 eğitim, eğitim eğrileriyle) + ezber denetimi (etiket karıştırma). Yeni modeller makaledeki modellerle karşılaştırılır. | Kademe 0 + ~45 dk: 12 eğitim ~22 dk (wandb açıkken ~27), ezber denetimi ~19 dk |
 | 2 | aşağıdaki komut listesi | Makaledeki bütün deneyler | ~1–2 gün |
 
-Disk: veri ~4.4 GB, model ağırlıkları ve kayıtlı tahminler ~3.1 GB, ara dosyalar (ölçülecek). Toplam en az 25 GB boş
-yer önerilir.
+Disk (temiz kurulumda ölçüldü): ham veri 5.2 GB, ön işleme çıktıları 6.6 GB, model ağırlıkları ve kayıtlı tahminler
+3.1 GB, Python ortamı ~4.7 GB; toplam ~20 GB. En az 25 GB boş yer önerilir.
+
+Kademe 1, indirilen saldırgan ağırlıklarını (`modeller/saldirgan_*_tez_s0/`) bu bilgisayarda eğitilenlerle değiştirir.
+İndirilen sürüme dönmek için: `python -m boruhatti.modelleri_indir`.
 
 ### Sonuç nasıl okunur
 

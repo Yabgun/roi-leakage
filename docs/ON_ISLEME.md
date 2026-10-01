@@ -78,12 +78,16 @@ olduğu için etiketi sızdırır.
 
 ## 6. Çalıştırma
 
-İndirme ve bütün ön işleme iki komuttur:
+İndirme ve bütün ön işleme üç komuttur (`calistir.py` bunları sırayla çalıştırır):
 
 ```
-python -m boruhatti.veri_indir    # Kaggle (hesapsız) ve figshare'den indirir, çalışmadaki veriyle aynı olduğunu doğrular
-python -m boruhatti.on_isle       # bu belgedeki adımların hepsi; çıktısı olan adımı atlar
+python -m boruhatti.veri_indir        # Kaggle (hesapsız) ve figshare'den indirir, çalışmadaki veriyle aynı olduğunu doğrular
+python -m boruhatti.modelleri_indir   # makaledeki ağırlıklar (U-Net dahil) Hugging Face'ten; SHA-256 ile doğrulanır
+python -m boruhatti.on_isle           # bu belgedeki adımların hepsi; çıktısı olan adımı atlar
 ```
+
+`modelleri_indir` ön işlemeden önce çalışırsa Kaggle akciğer maskeleri makaledeki U-Net'le üretilir; yoksa U-Net
+yeniden eğitilir.
 
 `boruhatti.on_isle` sırasıyla şu betikleri çağırır: `experiments.prepare_data`, `experiments.lung_segmenter`
 (kayıtlı U-Net ağırlığıyla yalnız maske, ağırlık yoksa eğitim), `experiments.brain_visible_norm`, 224 px önbellekler,
