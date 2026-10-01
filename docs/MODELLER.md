@@ -30,19 +30,25 @@ Etiketler ve her modelin girdisi/çıktısı: `docs/ETIKETLER.md`.
 Şifreli çıkarım (CKKS, TenSEAL): Model D ve D2 için `foveahe/he_infer.py`, Model C için `foveahe/he_cnn.py`
 (`CNNInference`). Şifreli ve şifresiz sonuç aynıdır: en büyük logit farkı 1.6e-4, tahmin uyumu %100 (makale, Bulgular).
 
-## Ağırlıkların durumu (1 Ekim 2026)
+## Ağırlıklar nerede
 
-| Model | Kayıtlı ağırlık | Yer | Not |
+Bütün ağırlıklar ve kayıtlı tahminler Hugging Face'tedir: https://huggingface.co/Btutumlu/roi-leakage.
+`python -m boruhatti.modelleri_indir` hepsini aşağıdaki yerlere indirir ve SHA-256 ile doğrular (Kademe 0 ve 1 bunu
+kendisi yapar).
+
+| Model | Dosyalar | Yer (indirince) | Not |
 |---|---|---|---|
-| Model D, D2, C | Var: 807 dosya, standardizasyon ve BN katlanmış, CKKS'e hazır `.npz` | `results/checkpoints/fovea_<veri>_<model>_<temsil>_s<tohum>_<kat>.npz` | Makaledeki Tablo V ve VIII modellerinin 5 tohumluk ağırlıklarının hepsi kayıtlı (şifreli özet dahil 480 dosya; 1 Eki'de denetlendi). İlk teslim zip'inde yoktu; Hugging Face'e yüklenecek. |
-| Şifreli özet D/D2 | Var: 62 `.npz` | `results/checkpoints/ozet_<veri>_<model>_s<tohum>_<kat>.npz` | Aynı |
-| U-Net | Var: 7.8 MB | `results/checkpoints/lung_unet.pt` | Aynı |
-| Bağlam saldırganı (ResNet-18) | **Var (1 Eki 2026'dan beri)**: tam ve bağlam görüşü; beyin MR'da 5 kat modeli, COVID-QU-Ex'te 1 model; tohum 0 | `modeller/saldirgan_<veri>_<görüş>_tez_s0/<kat>.pt` | Makaledeki özgün koşular tahminleri kaydetti, ağırlıkları kaydetmedi. Aynı ayarla yeniden eğitildi (`boruhatti.egit`). Makaledeki sayılarla fark `results/boruhatti/degerlendirme_saldirgan.json` dosyasında. Ekran kartı hesapları bit bit tekrarlanmadığı için aynı tohumla bile küçük fark olur. |
-| Meta veri saldırganı | Yok (gerek yok) | – | Saniyeler içinde yeniden eğitilir; tahminleri `results/preds/saldiri_A_*.npz` |
-| Π_ROI | Eğitim yok | – | Rastgele ağırlık (tohum 0), yalnız maliyet ölçümü |
+| Model D, D2, C (Tablo V) | 450 `.npz`; standardizasyon ve yığın normalizasyonu katlanmış, CKKS'e hazır | `modeller/makale/fovea_<veri>_<model>_<temsil>_s<tohum>_<bölme>.npz` | Makaledeki koşuların kendisi (5 tohum). Yeniden eğitim bit bit aynı sonucu verir (aşağıda). |
+| Şifreli özet + Model D/D2 (Tablo VIII) | 30 `.npz` | `modeller/makale/ozet_<veri>_<model>_s<tohum>_<bölme>.npz` | Aynı |
+| U-Net | 1 `.pt` (7.8 MB) | `modeller/makale/lung_unet.pt` | Kaggle görüntülerine akciğer maskesi; `boruhatti.tahmin --otomatik-maske` |
+| Bağlam saldırganı (ResNet-18) | Tam ve Π_ROI görüşü; beyin MR'da 5 kat modeli, COVID-QU-Ex'te 1 model; tohum 0 | `modeller/saldirgan_<veri>_<görüş>_tez_s0/<bölme>.pt` | Makaledeki özgün koşular tahminleri kaydetti, ağırlıkları kaydetmedi. Aynı ayarla yeniden eğitildi (`boruhatti.egit`); makaledekiyle fark aşağıda. |
+| Kayıtlı tahminler | 555 dosya | `results/preds/` | Makale tabloları bunlardan yeniden hesaplanır (`analysis.metrikler`) |
+| Meta veri saldırganı | – | – | Saniyeler içinde yeniden eğitilir |
+| Π_ROI | – | – | Eğitim yok; rastgele ağırlık (tohum 0), yalnız maliyet ölçümü |
 
-`results/` altındaki `checkpoints/` ve `preds/` klasörleri ile `modeller/` klasörü boyutları nedeniyle git deposunda
-değildir; ağırlıklar ayrıca yayımlanır (README).
+Bu çalışmanın bilgisayarında makale ağırlıkları `results/checkpoints/` altındadır. `boruhatti.degerlendir` önce
+`modeller/makale/`, sonra `results/checkpoints/` klasörüne bakar. `modeller/`, `results/checkpoints/` ve
+`results/preds/` boyutları nedeniyle git deposunda değildir.
 
 ## Kayıtlı ağırlıklarla sınama (1 Eki 2026)
 

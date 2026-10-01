@@ -1,15 +1,16 @@
 """Tek komutla yeniden üretim (danışman maddeleri 6 ve 7).
 
 Kademeler:
-- 0: veriyi indir ve doğrula → ön işle → makaledeki modelleri (indirilen ağırlıklar) test et → birkaç görüntüde gerçek
-     CKKS şifreli çıkarım → makale tablolarını kayıtlı tahminlerden yeniden hesapla → denetim. Eğitim yoktur; süresinin
-     çoğu indirme ve ön işlemedir.
-Denetim (`boruhatti.kontrol`) yalnız bu koşuda üretilen sonuçları sayar; git'ten gelen başvuru sonuçları sayılmaz.
+- 0: veriyi indir ve doğrula → model ağırlıklarını ve kayıtlı tahminleri indir (Hugging Face) → ön işle → makaledeki
+     modelleri test et → birkaç görüntüde gerçek CKKS şifreli çıkarım → makale tablolarını kayıtlı tahminlerden
+     yeniden hesapla → denetim. Eğitim yoktur; süresinin çoğu indirme ve ön işlemedir.
 - 1: Kademe 0 + makalenin ana modellerini bu bilgisayarda yeniden eğit (saldırgan: makale protokolü ve izleme
      koşuları; FoveaHE modelleri: makaledeki ilk bölmede, eğitim eğrileriyle; beyin MR Model D ayrıca 5 katın hepsiyle)
      → ezber denetimi (etiket karıştırma) → yeni modelleri test et ve makaledeki modellerle karşılaştır → denetim.
      RTX 2070'te eğitimler ~27 dk, ezber denetimi ~19 dk sürdü.
 - 2: makaledeki bütün deneyler (`experiments/`); çok uzun, isteğe bağlı. Komutlar README'de.
+
+Denetim (`boruhatti.kontrol`) yalnız bu koşuda üretilen sonuçları sayar; git'ten gelen başvuru sonuçları sayılmaz.
 
 Örnek: python calistir.py --kademe 1
 """
@@ -60,6 +61,7 @@ def main():
     t0, baslangic = time.perf_counter(), time.time()  # kontrol yalnız bu andan sonra yazılan sonuçları sayar
     calistir("boruhatti.ortam_kontrol", zorunlu=False)
     calistir("boruhatti.veri_indir")
+    calistir("boruhatti.modelleri_indir")  # ön işlemeden önce: Kaggle maskeleri hazır U-Net'le üretilir
     calistir("boruhatti.on_isle")
     calistir("boruhatti.kopya_kontrol", "--ic", zorunlu=False)
     if args.kademe == 1:

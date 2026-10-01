@@ -15,6 +15,15 @@ BEKLENEN = config.RESULTS / "beklenen" / "makale_degerleri.json"
 WANDB_PROJE = os.environ.get("WANDB_PROJECT", "roi-leakage")
 
 
+def wandb_girisi_var() -> bool:
+    """wandb'ye giriş yapılmış mı (ortam değişkeni ya da netrc)? Giriş yoksa wandb hiç başlatılmaz; böylece eğitim
+    ortasında terminalde giriş sorusu açılıp beklemez."""
+    if os.environ.get("WANDB_API_KEY") or os.environ.get("WANDB_MODE") in ("offline", "dryrun"):
+        return True
+    return any((Path.home() / n).exists() and "api.wandb.ai" in (Path.home() / n).read_text(errors="ignore")
+               for n in ("_netrc", ".netrc"))
+
+
 def aygit(istek: str | None = None) -> str:
     """'cuda' varsa onu, yoksa 'cpu' döndürür. İstenen aygıt yoksa açık bir hata verir."""
     import torch
@@ -76,6 +85,9 @@ class Izleyici:
         self.adimlar, self.epochlar, self.run, self._eksenler = [], [], None, set()
         self._adim = 0
         if not wandb_ac or os.environ.get("WANDB_MODE") == "disabled":
+            return
+        if not wandb_girisi_var():
+            print("[wandb] giriş yapılmamış; eğitim eğrileri yalnız yerelde kaydedilecek (isteğe bağlı: `wandb login`)")
             return
         try:
             import wandb

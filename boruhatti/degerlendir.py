@@ -52,7 +52,7 @@ def agirlik_yolu(ad: str) -> Path:
     for kok in (MODELLER / "makale", config.CHECKPOINTS):
         if (kok / ad).exists():
             return kok / ad
-    raise FileNotFoundError(f"{ad} bulunamadı: modeller/makale/ altına indirin (README: modelleri indirme)")
+    raise FileNotFoundError(f"{ad} bulunamadı: önce `python -m boruhatti.modelleri_indir` çalıştırın")
 
 
 def ileri(w: dict, x: np.ndarray) -> np.ndarray:

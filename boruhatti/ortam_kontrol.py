@@ -74,10 +74,8 @@ def main():
           + ("" if uzunluk <= 255 else "; projeyi kısa bir klasöre taşıyın, ör. C:\\roi-leakage"))
     try:
         import wandb  # noqa: F401
-        from pathlib import Path
-        giris = bool(__import__("os").environ.get("WANDB_API_KEY")) or any(
-            (Path.home() / n).exists() and "api.wandb.ai" in (Path.home() / n).read_text(errors="ignore")
-            for n in ("_netrc", ".netrc"))
+        from boruhatti.ortak import wandb_girisi_var
+        giris = wandb_girisi_var()
         satir("TAMAM" if giris else "BILGI", "wandb", "giriş yapılmış" if giris else
               "giriş yok (isteğe bağlı; eğitim eğrileri yine yerelde kaydedilir)")
     except ImportError:
