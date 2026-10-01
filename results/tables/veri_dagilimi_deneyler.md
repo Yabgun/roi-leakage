@@ -1,0 +1,11 @@
+| Deney | Veri | Bölme düzeni | Eğitim | Doğrulama | Test | Not |
+|---|---|---|---|---|---|---|
+| Saldırı A ve B (Tablo II, III) | Beyin MR | Hasta bazlı 5 kat; her turda 1 kat test, 4 kat eğitim | 2385–2522 | – | 542–679 | Her kesit bir kez test edilir; ölçüler 5 katın birleşimi |
+| Saldırı A ve B (Tablo II, III) | COVID-QU-Ex | Resmi bölme; eğitim = Train + Val | 27 132 | – | 6788 | Test bölmesi eğitimde hiç kullanılmaz |
+| Saldırı A, girdi boyutu (Tablo II) | Kaggle CXR | Kümenin kendi train/test bölmesi; normal ve pnömoni | 4684 | – | 1172 | Yalnız görüntü boyutu |
+| Şifreli modeller (Tablo V, VIII) | Beyin MR | Hasta bazlı 5 kat; her turda 1 kat test, sonraki kat doğrulama, 3 kat eğitim | 1793–1879 | 542–679 | 542–679 | Doğrulama kaybıyla erken durdurma ve ağırlık azaltma seçimi |
+| Şifreli modeller (Tablo V, VIII) | COVID-QU-Ex | Resmi Train / Val / Test | 21 715 | 5417 | 6788 | Doğrulama kaybıyla erken durdurma ve ağırlık azaltma seçimi |
+| U-Net akciğer segmentasyonu | COVID-QU-Ex | Resmi Train / Val | 21 715 | 5417 | – | Kaggle görüntülerine akciğer maskesi üretmek için |
+| Gerçekçilik testi, yön A (metin) | COVID-QU-Ex → Kaggle CXR | Eğitim: COVID-QU-Ex Train + Val, normal ve COVID dışı pnömoni; test: kopyasız Kaggle, normal ve pnömoni | 17 571 | – | 1497 | Saldırgan hastanenin verisini hiç görmez |
+| Gerçekçilik testi, yön B (metin) | Kaggle CXR → COVID-QU-Ex | Eğitim: kopyasız Kaggle train, normal ve pnömoni; test: COVID-QU-Ex Test, normal ve COVID dışı pnömoni | 1215 | – | 4393 | Küçük ve başka kaynaklı eğitim kümesi |
+| Genelleme (metin) | COVID-QU-Ex → Kaggle CXR | Tablo V modelleri yeniden eğitilmeden kopyasız Kaggle'da | – | – | 1767 | 3 sınıf; akciğer maskesi U-Net'ten |

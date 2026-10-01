@@ -1,0 +1,112 @@
+kaynak,makale,hesaplanan,ondalik,tuttu
+"Tablo II, Beyin MR, tümör tipi, Girdi boyutu, AUC",0.457,0.457375,3,True
+"Tablo II, Beyin MR, tümör tipi, Girdi boyutu, %95 GA alt",0.401,0.401162,3,True
+"Tablo II, Beyin MR, tümör tipi, Girdi boyutu, %95 GA üst",0.519,0.518648,3,True
+"Tablo II, Beyin MR, tümör tipi, Konum, AUC",0.775,0.77531,3,True
+"Tablo II, Beyin MR, tümör tipi, Konum, %95 GA alt",0.743,0.743033,3,True
+"Tablo II, Beyin MR, tümör tipi, Konum, %95 GA üst",0.804,0.803664,3,True
+"Tablo II, Beyin MR, tümör tipi, Büyüklük, AUC",0.708,0.708214,3,True
+"Tablo II, Beyin MR, tümör tipi, Büyüklük, %95 GA alt",0.674,0.674248,3,True
+"Tablo II, Beyin MR, tümör tipi, Büyüklük, %95 GA üst",0.736,0.736122,3,True
+"Tablo II, Beyin MR, tümör tipi, Şekil, AUC",0.722,0.721536,3,True
+"Tablo II, Beyin MR, tümör tipi, Şekil, %95 GA alt",0.691,0.690847,3,True
+"Tablo II, Beyin MR, tümör tipi, Şekil, %95 GA üst",0.747,0.747447,3,True
+"Tablo II, Beyin MR, tümör tipi, Tümü, AUC",0.83,0.82986,3,True
+"Tablo II, Beyin MR, tümör tipi, Tümü, %95 GA alt",0.801,0.800996,3,True
+"Tablo II, Beyin MR, tümör tipi, Tümü, %95 GA üst",0.855,0.855268,3,True
+"Tablo II, COVID-QU-Ex, teşhis, Konum, AUC",0.729,0.728639,3,True
+"Tablo II, COVID-QU-Ex, teşhis, Konum, %95 GA alt",0.72,0.720262,3,True
+"Tablo II, COVID-QU-Ex, teşhis, Konum, %95 GA üst",0.739,0.738617,3,True
+"Tablo II, COVID-QU-Ex, teşhis, Büyüklük, AUC",0.765,0.764951,3,True
+"Tablo II, COVID-QU-Ex, teşhis, Büyüklük, %95 GA alt",0.757,0.756884,3,True
+"Tablo II, COVID-QU-Ex, teşhis, Büyüklük, %95 GA üst",0.775,0.77527,3,True
+"Tablo II, COVID-QU-Ex, teşhis, Şekil, AUC",0.78,0.780177,3,True
+"Tablo II, COVID-QU-Ex, teşhis, Şekil, %95 GA alt",0.771,0.771347,3,True
+"Tablo II, COVID-QU-Ex, teşhis, Şekil, %95 GA üst",0.788,0.788418,3,True
+"Tablo II, COVID-QU-Ex, teşhis, Tümü, AUC",0.834,0.833652,3,True
+"Tablo II, COVID-QU-Ex, teşhis, Tümü, %95 GA alt",0.827,0.826524,3,True
+"Tablo II, COVID-QU-Ex, teşhis, Tümü, %95 GA üst",0.841,0.841246,3,True
+"Tablo II, COVID-QU-Ex, normal/pnömoni, Tümü, AUC",0.904,0.904426,3,True
+"Tablo II, COVID-QU-Ex, normal/pnömoni, Tümü, %95 GA alt",0.895,0.894718,3,True
+"Tablo II, COVID-QU-Ex, normal/pnömoni, Tümü, %95 GA üst",0.913,0.912555,3,True
+"Tablo II, Kaggle, normal/pnömoni, Girdi boyutu, AUC",0.934,0.933824,3,True
+"Tablo III, Tam (şifresiz), Beyin MR, AUC",0.9843,0.98434,4,True
+"Tablo III, Tam (şifresiz), Beyin MR, std",0.0012,0.001207,4,True
+"Tablo III, Tam (şifresiz), COVID-QU-Ex, AUC",0.9966,0.996569,4,True
+"Tablo III, Tam (şifresiz), COVID-QU-Ex, std",0.0002,0.000209,4,True
+"Tablo III, Yalnız ROI, Beyin MR, AUC",0.9683,0.968328,4,True
+"Tablo III, Yalnız ROI, COVID-QU-Ex, AUC",0.9905,0.990475,4,True
+"Tablo III, Bağlam (Π_ROI), Beyin MR, AUC",0.9759,0.975916,4,True
+"Tablo III, Bağlam (Π_ROI), Beyin MR, std",0.0007,0.000717,4,True
+"Tablo III, Bağlam (Π_ROI), COVID-QU-Ex, AUC",0.9932,0.993204,4,True
+"Tablo III, Bağlam (Π_ROI), COVID-QU-Ex, std",0.0001,0.000126,4,True
+"Tablo III, Bağlam + 10 piksel, Beyin MR, AUC",0.9705,0.970541,4,True
+"Tablo III, Bağlam + 10 piksel, COVID-QU-Ex, AUC",0.9915,0.991491,4,True
+"Tablo III, Bağlam + 20 piksel, Beyin MR, AUC",0.9663,0.966261,4,True
+"Tablo III, Bağlam + 20 piksel, COVID-QU-Ex, AUC",0.989,0.988967,4,True
+"Tablo III, Bağlam + 40 piksel, Beyin MR, AUC",0.9674,0.967412,4,True
+"Tablo III, Bağlam + 40 piksel, Beyin MR, std",0.0016,0.001551,4,True
+"Tablo III, Bağlam + 40 piksel, COVID-QU-Ex, AUC",0.9556,0.955618,4,True
+"Tablo III, Bağlam + 40 piksel, COVID-QU-Ex, std",0.0012,0.001151,4,True
+"Tablo III, Sınırlayıcı kutu, Beyin MR, AUC",0.9735,0.97346,4,True
+"Tablo III, Sınırlayıcı kutu, COVID-QU-Ex, AUC",0.9839,0.983924,4,True
+"Tablo V, Beyin, Model D, Tam",0.881,0.881079,3,True
+"Tablo V, Beyin, Model D, F32_G16",0.948,0.947944,3,True
+"Tablo V, Beyin, Model D, F64_G32",0.945,0.945391,3,True
+"Tablo V, Beyin, Model D, U64",0.882,0.88152,3,True
+"Tablo V, Beyin, Model D, U64+geo",0.882,0.881607,3,True
+"Tablo V, Beyin, Model D2, Tam",0.872,0.871891,3,True
+"Tablo V, Beyin, Model D2, F32_G16",0.909,0.90851,3,True
+"Tablo V, Beyin, Model D2, F64_G32",0.91,0.910286,3,True
+"Tablo V, Beyin, Model D2, U64",0.864,0.863973,3,True
+"Tablo V, Beyin, Model D2, U64+geo",0.86,0.860392,3,True
+"Tablo V, Beyin, Model C, Tam",0.852,0.851841,3,True
+"Tablo V, Beyin, Model C, F32_G16",0.944,0.943719,3,True
+"Tablo V, Beyin, Model C, F64_G32",0.927,0.926699,3,True
+"Tablo V, Beyin, Model C, U64",0.848,0.848181,3,True
+"Tablo V, Beyin, Model C, U64+geo",0.851,0.851204,3,True
+"Tablo V, COVID, Model D, Tam",0.895,0.895263,3,True
+"Tablo V, COVID, Model D, F32_G16",0.915,0.915072,3,True
+"Tablo V, COVID, Model D, F64_G32",0.915,0.91503,3,True
+"Tablo V, COVID, Model D, U64",0.865,0.865383,3,True
+"Tablo V, COVID, Model D, U64+geo",0.867,0.86738,3,True
+"Tablo V, COVID, Model D2, Tam",0.946,0.946045,3,True
+"Tablo V, COVID, Model D2, F32_G16",0.954,0.954251,3,True
+"Tablo V, COVID, Model D2, F64_G32",0.952,0.951877,3,True
+"Tablo V, COVID, Model D2, U64",0.938,0.937696,3,True
+"Tablo V, COVID, Model D2, U64+geo",0.937,0.937419,3,True
+"Tablo V, COVID, Model C, Tam",0.925,0.924937,3,True
+"Tablo V, COVID, Model C, F32_G16",0.93,0.930004,3,True
+"Tablo V, COVID, Model C, F64_G32",0.935,0.934923,3,True
+"Tablo V, COVID, Model C, U64",0.917,0.917361,3,True
+"Tablo V, COVID, Model C, U64+geo",0.919,0.918588,3,True
+"Tablo VIII, Tam şifreleme, Beyin MR, teşhis AUC",0.881,0.881079,3,True
+"Tablo VIII, Tam şifreleme, COVID-QU-Ex, teşhis AUC",0.946,0.946045,3,True
+"Tablo VIII, Π_ROI, varsayılan, Beyin MR, teşhis AUC",0.881,0.881079,3,True
+"Tablo VIII, Π_ROI, varsayılan, Beyin MR, saldırgan AUC",0.98,0.975916,2,True
+"Tablo VIII, Π_ROI, varsayılan, COVID-QU-Ex, teşhis AUC",0.946,0.946045,3,True
+"Tablo VIII, Π_ROI, varsayılan, COVID-QU-Ex, saldırgan AUC",0.99,0.993204,2,True
+"Tablo VIII, Π_ROI, gizlilik şartlı, Beyin MR, teşhis AUC",0.881,0.881079,3,True
+"Tablo VIII, Π_ROI, gizlilik şartlı, COVID-QU-Ex, teşhis AUC",0.946,0.946045,3,True
+"Tablo VIII, Bozuk bağlam (σ = 0.4), Beyin MR, teşhis AUC",0.881,0.881079,3,True
+"Tablo VIII, Bozuk bağlam (σ = 0.4), Beyin MR, saldırgan AUC",0.97,0.966994,2,True
+"Tablo VIII, Bozuk bağlam (σ = 0.4), COVID-QU-Ex, teşhis AUC",0.946,0.946045,3,True
+"Tablo VIII, Bozuk bağlam (σ = 0.4), COVID-QU-Ex, saldırgan AUC",0.98,0.983362,2,True
+"Tablo VIII, FoveaHE F32_G16, Beyin MR, teşhis AUC",0.948,0.947944,3,True
+"Tablo VIII, FoveaHE F32_G16, COVID-QU-Ex, teşhis AUC",0.954,0.954251,3,True
+"Tablo VIII, FoveaHE F64_G32, Beyin MR, teşhis AUC",0.945,0.945391,3,True
+"Tablo VIII, FoveaHE F64_G32, COVID-QU-Ex, teşhis AUC",0.952,0.951877,3,True
+"Tablo VIII, Şifreli özet, Beyin MR, teşhis AUC",0.955,0.955073,3,True
+"Tablo VIII, Şifreli özet, COVID-QU-Ex, teşhis AUC",0.982,0.981513,3,True
+"Metin, bozuk bağlam σ = 0.4, Beyin MR, saldırgan AUC",0.967,0.966994,3,True
+"Metin, bozuk bağlam σ = 0.4, COVID-QU-Ex, saldırgan AUC",0.983,0.983362,3,True
+"Metin, ResNet-18 bilgi düzeyi, Beyin MR, tam",0.9841,0.984086,4,True
+"Metin, ResNet-18 bilgi düzeyi, Beyin MR, F32_G16",0.9919,0.991864,4,True
+"Metin, ResNet-18 bilgi düzeyi, Beyin MR, F64_G32",0.9936,0.993593,4,True
+"Metin, ResNet-18 bilgi düzeyi, Beyin MR, tam_pencere",0.9909,0.990872,4,True
+"Metin, ResNet-18 bilgi düzeyi, COVID-QU-Ex, en büyük kayıp",0.0027,0.002748,4,True
+"Metin, kesit normalizasyonu, tam/bağlam en büyük fark",0.001,0.000872,3,True
+"Metin, kesit normalizasyonu, yalnız ROI",0.978,0.978139,3,True
+"Metin, Saldırı A sınıf bazında AUC, meningiom",0.714,0.713845,3,True
+"Metin, Saldırı A sınıf bazında AUC, gliom",0.827,0.826674,3,True
+"Metin, Saldırı A sınıf bazında AUC, hipofiz",0.949,0.949062,3,True

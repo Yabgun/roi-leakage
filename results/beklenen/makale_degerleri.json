@@ -1,0 +1,453 @@
+{
+ "kaynak": "belgeler/IEEE/makale/makale.tex",
+ "sha256": "82dc78bd43159ece98df63cd0a8af572b8896da496cecefabfd39eb761f460a3",
+ "tablo_II_saldiri_A": {
+  "tex_satiri": 217,
+  "satirlar": [
+   {
+    "veri_hedef": "Beyin MR, tümör tipi",
+    "oznitelikler": "Girdi boyutu",
+    "auc": 0.457,
+    "ga95": [
+     0.401,
+     0.519
+    ],
+    "ondalik": 3
+   },
+   {
+    "veri_hedef": "Beyin MR, tümör tipi",
+    "oznitelikler": "Konum",
+    "auc": 0.775,
+    "ga95": [
+     0.743,
+     0.804
+    ],
+    "ondalik": 3
+   },
+   {
+    "veri_hedef": "Beyin MR, tümör tipi",
+    "oznitelikler": "Büyüklük",
+    "auc": 0.708,
+    "ga95": [
+     0.674,
+     0.736
+    ],
+    "ondalik": 3
+   },
+   {
+    "veri_hedef": "Beyin MR, tümör tipi",
+    "oznitelikler": "Şekil",
+    "auc": 0.722,
+    "ga95": [
+     0.691,
+     0.747
+    ],
+    "ondalik": 3
+   },
+   {
+    "veri_hedef": "Beyin MR, tümör tipi",
+    "oznitelikler": "Tümü",
+    "auc": 0.83,
+    "ga95": [
+     0.801,
+     0.855
+    ],
+    "ondalik": 3
+   },
+   {
+    "veri_hedef": "COVID-QU-Ex, teşhis",
+    "oznitelikler": "Konum",
+    "auc": 0.729,
+    "ga95": [
+     0.72,
+     0.739
+    ],
+    "ondalik": 3
+   },
+   {
+    "veri_hedef": "COVID-QU-Ex, teşhis",
+    "oznitelikler": "Büyüklük",
+    "auc": 0.765,
+    "ga95": [
+     0.757,
+     0.775
+    ],
+    "ondalik": 3
+   },
+   {
+    "veri_hedef": "COVID-QU-Ex, teşhis",
+    "oznitelikler": "Şekil",
+    "auc": 0.78,
+    "ga95": [
+     0.771,
+     0.788
+    ],
+    "ondalik": 3
+   },
+   {
+    "veri_hedef": "COVID-QU-Ex, teşhis",
+    "oznitelikler": "Tümü",
+    "auc": 0.834,
+    "ga95": [
+     0.827,
+     0.841
+    ],
+    "ondalik": 3
+   },
+   {
+    "veri_hedef": "COVID-QU-Ex, normal/pnömoni",
+    "oznitelikler": "Tümü",
+    "auc": 0.904,
+    "ga95": [
+     0.895,
+     0.913
+    ],
+    "ondalik": 3
+   },
+   {
+    "veri_hedef": "Kaggle, normal/pnömoni",
+    "oznitelikler": "Girdi boyutu",
+    "auc": 0.934,
+    "ga95": null,
+    "ondalik": 3
+   }
+  ]
+ },
+ "tablo_III_saldiri_B": {
+  "tex_satiri": 248,
+  "satirlar": [
+   {
+    "gorus": "Tam (şifresiz)",
+    "beyin": {
+     "gizli": 0.0,
+     "auc": 0.9843,
+     "std": 0.0012
+    },
+    "covidqu": {
+     "gizli": 0.0,
+     "auc": 0.9966,
+     "std": 0.0002
+    },
+    "ondalik": 4
+   },
+   {
+    "gorus": "Yalnız ROI",
+    "beyin": {
+     "gizli": 0.983,
+     "auc": 0.9683,
+     "std": null
+    },
+    "covidqu": {
+     "gizli": 0.765,
+     "auc": 0.9905,
+     "std": null
+    },
+    "ondalik": 4
+   },
+   {
+    "gorus": "Bağlam (\\PiROI{})",
+    "beyin": {
+     "gizli": 0.017,
+     "auc": 0.9759,
+     "std": 0.0007
+    },
+    "covidqu": {
+     "gizli": 0.235,
+     "auc": 0.9932,
+     "std": 0.0001
+    },
+    "ondalik": 4
+   },
+   {
+    "gorus": "Bağlam + 10 piksel",
+    "beyin": {
+     "gizli": 0.051,
+     "auc": 0.9705,
+     "std": null
+    },
+    "covidqu": {
+     "gizli": 0.425,
+     "auc": 0.9915,
+     "std": null
+    },
+    "ondalik": 4
+   },
+   {
+    "gorus": "Bağlam + 20 piksel",
+    "beyin": {
+     "gizli": 0.101,
+     "auc": 0.9663,
+     "std": null
+    },
+    "covidqu": {
+     "gizli": 0.609,
+     "auc": 0.989,
+     "std": null
+    },
+    "ondalik": 4
+   },
+   {
+    "gorus": "Bağlam + 40 piksel",
+    "beyin": {
+     "gizli": 0.248,
+     "auc": 0.9674,
+     "std": 0.0016
+    },
+    "covidqu": {
+     "gizli": 0.874,
+     "auc": 0.9556,
+     "std": 0.0012
+    },
+    "ondalik": 4
+   },
+   {
+    "gorus": "Sınırlayıcı kutu",
+    "beyin": {
+     "gizli": 0.025,
+     "auc": 0.9735,
+     "std": null
+    },
+    "covidqu": {
+     "gizli": 0.513,
+     "auc": 0.9839,
+     "std": null
+    },
+    "ondalik": 4
+   }
+  ]
+ },
+ "tablo_V_modeller": {
+  "tex_satiri": 325,
+  "satirlar": [
+   {
+    "veri": "Beyin",
+    "model": "D",
+    "Tam": 0.881,
+    "F32_G16": 0.948,
+    "F64_G32": 0.945,
+    "U64": 0.882,
+    "U64+geo": 0.882,
+    "ondalik": 3
+   },
+   {
+    "veri": "Beyin",
+    "model": "D2",
+    "Tam": 0.872,
+    "F32_G16": 0.909,
+    "F64_G32": 0.91,
+    "U64": 0.864,
+    "U64+geo": 0.86,
+    "ondalik": 3
+   },
+   {
+    "veri": "Beyin",
+    "model": "C",
+    "Tam": 0.852,
+    "F32_G16": 0.944,
+    "F64_G32": 0.927,
+    "U64": 0.848,
+    "U64+geo": 0.851,
+    "ondalik": 3
+   },
+   {
+    "veri": "COVID",
+    "model": "D",
+    "Tam": 0.895,
+    "F32_G16": 0.915,
+    "F64_G32": 0.915,
+    "U64": 0.865,
+    "U64+geo": 0.867,
+    "ondalik": 3
+   },
+   {
+    "veri": "COVID",
+    "model": "D2",
+    "Tam": 0.946,
+    "F32_G16": 0.954,
+    "F64_G32": 0.952,
+    "U64": 0.938,
+    "U64+geo": 0.937,
+    "ondalik": 3
+   },
+   {
+    "veri": "COVID",
+    "model": "C",
+    "Tam": 0.925,
+    "F32_G16": 0.93,
+    "F64_G32": 0.935,
+    "U64": 0.917,
+    "U64+geo": 0.919,
+    "ondalik": 3
+   }
+  ]
+ },
+ "tablo_VIII_karsilastirma": {
+  "tex_satiri": 405,
+  "satirlar": [
+   {
+    "yontem": "Tam şifreleme",
+    "beyin": {
+     "auc": 0.881,
+     "hiz": 1.0,
+     "saldirgan": 0.53
+    },
+    "covidqu": {
+     "auc": 0.946,
+     "hiz": 1.0,
+     "saldirgan": 0.5
+    },
+    "ondalik": {
+     "auc": 3,
+     "saldirgan": 2
+    }
+   },
+   {
+    "yontem": "\\PiROI{}, varsayılan",
+    "beyin": {
+     "auc": 0.881,
+     "hiz": 24.2,
+     "saldirgan": 0.98
+    },
+    "covidqu": {
+     "auc": 0.946,
+     "hiz": 3.9,
+     "saldirgan": 0.99
+    },
+    "ondalik": {
+     "auc": 3,
+     "saldirgan": 2
+    }
+   },
+   {
+    "yontem": "\\PiROI{}, gizlilik şartlı",
+    "beyin": {
+     "auc": 0.881,
+     "hiz": 1.0,
+     "saldirgan": 0.8
+    },
+    "covidqu": {
+     "auc": 0.946,
+     "hiz": 1.0,
+     "saldirgan": 0.8
+    },
+    "ondalik": {
+     "auc": 3,
+     "saldirgan": 2
+    }
+   },
+   {
+    "yontem": "Bozuk bağlam ($\\sigma = 0.4$)",
+    "beyin": {
+     "auc": 0.881,
+     "hiz": 24.2,
+     "saldirgan": 0.97
+    },
+    "covidqu": {
+     "auc": 0.946,
+     "hiz": 3.9,
+     "saldirgan": 0.98
+    },
+    "ondalik": {
+     "auc": 3,
+     "saldirgan": 2
+    }
+   },
+   {
+    "yontem": "FoveaHE F32\\_G16",
+    "beyin": {
+     "auc": 0.948,
+     "hiz": 36.6,
+     "saldirgan": 0.53
+    },
+    "covidqu": {
+     "auc": 0.954,
+     "hiz": 8.0,
+     "saldirgan": 0.5
+    },
+    "ondalik": {
+     "auc": 3,
+     "saldirgan": 2
+    }
+   },
+   {
+    "yontem": "FoveaHE F64\\_G32",
+    "beyin": {
+     "auc": 0.945,
+     "hiz": 31.8,
+     "saldirgan": 0.53
+    },
+    "covidqu": {
+     "auc": 0.952,
+     "hiz": 7.0,
+     "saldirgan": 0.5
+    },
+    "ondalik": {
+     "auc": 3,
+     "saldirgan": 2
+    }
+   },
+   {
+    "yontem": "Şifreli özet",
+    "beyin": {
+     "auc": 0.955,
+     "hiz": 44.0,
+     "saldirgan": 0.53
+    },
+    "covidqu": {
+     "auc": 0.982,
+     "hiz": 9.8,
+     "saldirgan": 0.5
+    },
+    "ondalik": {
+     "auc": 3,
+     "saldirgan": 2
+    }
+   }
+  ]
+ },
+ "metin_adim1_resnet": {
+  "tex_satiri": 319,
+  "beyin_tam": 0.9841,
+  "beyin_F32_G16": 0.9919,
+  "beyin_F64_G32": 0.9936,
+  "covidqu_en_buyuk_kayip": 0.0027,
+  "beyin_tam_pencere": 0.9909,
+  "ondalik": 4
+ },
+ "metin_saldiri_B_kesit": {
+  "tex_satiri": 244,
+  "tam_baglam_en_buyuk_fark": 0.001,
+  "yalniz_roi_kesit": 0.978
+ },
+ "metin_bozuk_baglam": {
+  "tex_satiri": 401,
+  "beyin": 0.967,
+  "covidqu": 0.983,
+  "ondalik": 3
+ },
+ "metin_saldiri_A_beyin_sinif": {
+  "tex_satiri": 213,
+  "hipofiz": 0.949,
+  "gliom": 0.827,
+  "meningiom": 0.714,
+  "ondalik": 3
+ },
+ "metin_veri": {
+  "tex_satiri": 157,
+  "covidqu_toplam": 33920,
+  "covidqu_covid19": 11956,
+  "covidqu_non_covid": 11263,
+  "covidqu_normal": 10701,
+  "covidqu_train": 21715,
+  "covidqu_val": 5417,
+  "covidqu_test": 6788,
+  "beyin_hasta": 233,
+  "beyin_kesit": 3064,
+  "beyin_meningiom": 708,
+  "beyin_gliom": 1426,
+  "beyin_hipofiz": 930,
+  "kaggle_toplam": 6432,
+  "kaggle_kopyasi_olan": 4665,
+  "kaggle_kopyasiz_dis_test": 1767
+ }
+}
