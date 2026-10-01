@@ -1,5 +1,12 @@
-﻿# CUDA'li torch/torchvision icin once: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+# Python 3.13 (sonuçlar Python 3.13.0 ile üretildi).
+# 1) NVIDIA ekran kartı için CUDA'li torch/torchvision:
+#    pip install torch==2.14.0 torchvision==0.29.0 --index-url https://download.pytorch.org/whl/cu126
+# 2) Diğer paketler:
+#    pip install -r requirements.txt
+# Birebir aynı ortam (bütün alt bağımlılıklar sabit) için: requirements-kilit.txt
 h5py==3.16.0
+huggingface_hub==2.0.0
+kagglehub==1.0.2
 matplotlib==3.11.2
 numpy==2.5.2
 pandas==3.0.5
@@ -8,3 +15,4 @@ scikit-learn==1.9.1
 scipy==1.18.1
 tenseal==0.3.16
 tqdm==4.70.1
+wandb==0.30.0

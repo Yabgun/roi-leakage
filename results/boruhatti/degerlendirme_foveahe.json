@@ -1,0 +1,168 @@
+[
+  {
+    "model": "foveahe_D_beyin_F32_G16_izleme_s0",
+    "veri": "beyin",
+    "temsil": "F32_G16",
+    "tohum": 0,
+    "bolmeler": [
+      "k1"
+    ],
+    "n": 542,
+    "auc": 0.9299943277196387,
+    "f1_makro": 0.807865089022474,
+    "makaledeki_model_auc": 0.9299943277196387,
+    "fark": 0.0,
+    "tahmin_uyumu": 1.0,
+    "en_buyuk_agirlik_farki": 0.0,
+    "makaledeki_5_tohum_auc": {
+      "0": 0.9299943277196387,
+      "1": 0.9285048553056336,
+      "2": 0.9247385363652221,
+      "3": 0.9294456958904714,
+      "4": 0.9294866644668774
+    },
+    "makaledeki_5_tohum_auc_aralik": [
+      0.9247385363652221,
+      0.9299943277196387
+    ]
+  },
+  {
+    "model": "foveahe_D_beyin_F32_G16_tez_s0",
+    "veri": "beyin",
+    "temsil": "F32_G16",
+    "tohum": 0,
+    "bolmeler": [
+      "k1",
+      "k2",
+      "k3",
+      "k4",
+      "k5"
+    ],
+    "n": 3064,
+    "auc": 0.9471540540986618,
+    "f1_makro": 0.8211180897752798,
+    "makaledeki_model_auc": 0.9471540540986618,
+    "fark": 0.0,
+    "tahmin_uyumu": 1.0,
+    "en_buyuk_agirlik_farki": 0.0,
+    "makaledeki_5_tohum_auc": {
+      "0": 0.9471540540986618,
+      "1": 0.9476260548946142,
+      "2": 0.946896388382232,
+      "3": 0.9489860366644813,
+      "4": 0.9490586304447327
+    },
+    "makaledeki_5_tohum_auc_aralik": [
+      0.946896388382232,
+      0.9490586304447327
+    ]
+  },
+  {
+    "model": "foveahe_C_beyin_F32_G16_izleme_s0",
+    "veri": "beyin",
+    "temsil": "F32_G16",
+    "tohum": 0,
+    "bolmeler": [
+      "k1"
+    ],
+    "n": 542,
+    "auc": 0.9407568723513124,
+    "f1_makro": 0.8093265089676825,
+    "makaledeki_model_auc": 0.9407568723513124,
+    "fark": 0.0,
+    "tahmin_uyumu": 1.0,
+    "en_buyuk_agirlik_farki": 0.0,
+    "makaledeki_5_tohum_auc": {
+      "0": 0.9407568723513124,
+      "1": 0.9304129192992296,
+      "2": 0.9262533588204555,
+      "3": 0.9293891424571022,
+      "4": 0.9299465106680435
+    },
+    "makaledeki_5_tohum_auc_aralik": [
+      0.9262533588204555,
+      0.9407568723513124
+    ]
+  },
+  {
+    "model": "foveahe_D2_covidqu_F32_G16_izleme_s0",
+    "veri": "covidqu",
+    "temsil": "F32_G16",
+    "tohum": 0,
+    "bolmeler": [
+      "test"
+    ],
+    "n": 6788,
+    "auc": 0.9517030926236104,
+    "f1_makro": 0.8408979667261356,
+    "makaledeki_model_auc": 0.9517030926236104,
+    "fark": 0.0,
+    "tahmin_uyumu": 1.0,
+    "en_buyuk_agirlik_farki": 0.0,
+    "makaledeki_5_tohum_auc": {
+      "0": 0.9517030926236104,
+      "1": 0.9563386135245701,
+      "2": 0.9545313775053978,
+      "3": 0.954301068270293,
+      "4": 0.9543822771491347
+    },
+    "makaledeki_5_tohum_auc_aralik": [
+      0.9517030926236104,
+      0.9563386135245701
+    ]
+  },
+  {
+    "model": "foveahe_D_beyin_U512_izleme_s0",
+    "veri": "beyin",
+    "temsil": "U512",
+    "tohum": 0,
+    "bolmeler": [
+      "k1"
+    ],
+    "n": 542,
+    "auc": 0.8914268061746239,
+    "f1_makro": 0.7345754880296967,
+    "makaledeki_model_auc": 0.8914268061746239,
+    "fark": 0.0,
+    "tahmin_uyumu": 1.0,
+    "en_buyuk_agirlik_farki": 0.0,
+    "makaledeki_5_tohum_auc": {
+      "0": 0.8914268061746239,
+      "1": 0.8977969213226688,
+      "2": 0.8659871612175207,
+      "3": 0.8940924601370175,
+      "4": 0.8907093725460608
+    },
+    "makaledeki_5_tohum_auc_aralik": [
+      0.8659871612175207,
+      0.8977969213226688
+    ]
+  },
+  {
+    "model": "foveahe_D2_covidqu_U256_izleme_s0",
+    "veri": "covidqu",
+    "temsil": "U256",
+    "tohum": 0,
+    "bolmeler": [
+      "test"
+    ],
+    "n": 6788,
+    "auc": 0.9465133846770476,
+    "f1_makro": 0.8359869779938682,
+    "makaledeki_model_auc": 0.9465133846770476,
+    "fark": 0.0,
+    "tahmin_uyumu": 1.0,
+    "en_buyuk_agirlik_farki": 0.0,
+    "makaledeki_5_tohum_auc": {
+      "0": 0.9465133846770476,
+      "1": 0.9469932654176497,
+      "2": 0.9442046309985982,
+      "3": 0.9469728223535466,
+      "4": 0.9455423705731802
+    },
+    "makaledeki_5_tohum_auc_aralik": [
+      0.9442046309985982,
+      0.9469932654176497
+    ]
+  }
+]

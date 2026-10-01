@@ -1,0 +1,16 @@
+﻿denetim,sonuc,ayrinti
+"Makaledeki şifreli modeller (Tablo V, VIII)",TUTTU,32/32 değer makaledeki 5 tohum ortalamasıyla aynı
+"CKKS şifreli çıkarım: beyin MR (Cheng), Model D F32_G16",TUTTU,"9 görüntü, en büyük logit farkı 2.3e-05, tahmin uyumu %100, görüntü başına 1.20 s"
+"CKKS şifreli çıkarım: beyin MR (Cheng), Model C F32_G16",TUTTU,"9 görüntü, en büyük logit farkı 7.7e-05, tahmin uyumu %100, görüntü başına 0.47 s"
+"CKKS şifreli çıkarım: akciğer grafisi (COVID-QU-Ex), Model D2 F32_G16",TUTTU,"9 görüntü, en büyük logit farkı 7.0e-05, tahmin uyumu %100, görüntü başına 1.27 s"
+Saldırgan: saldirgan_beyin_baglam_tez_s0,TUTTU,AUC 0.9743; makalede 5 tohum 0.9759 ± 0.0007; fark -0.0016 (tolerans ±0.005)
+Saldırgan: saldirgan_beyin_tam_tez_s0,TUTTU,AUC 0.9842; makalede 5 tohum 0.9843 ± 0.0012; fark -0.0001 (tolerans ±0.005)
+Saldırgan: saldirgan_covidqu_baglam_tez_s0,TUTTU,AUC 0.9934; makalede 5 tohum 0.9932 ± 0.0001; fark +0.0002 (tolerans ±0.005)
+Saldırgan: saldirgan_covidqu_tam_tez_s0,TUTTU,AUC 0.9967; makalede 5 tohum 0.9966 ± 0.0002; fark +0.0001 (tolerans ±0.005)
+FoveaHE yeniden eğitim: foveahe_D_beyin_F32_G16_izleme_s0,TUTTU,"AUC 0.9300; makaledeki aynı tohum ve bölmenin modeli 0.9300 (fark +0.0000, tahmin uyumu %100.0, ağırlıklar bit bit aynı); makaledeki 5 tohum aynı bölmede 0.9247–0.9300 (pay ±0.005)"
+FoveaHE yeniden eğitim: foveahe_D_beyin_F32_G16_tez_s0,TUTTU,"AUC 0.9472; makaledeki aynı tohum ve bölmenin modeli 0.9472 (fark +0.0000, tahmin uyumu %100.0, ağırlıklar bit bit aynı); makaledeki 5 tohum aynı bölmede 0.9469–0.9491 (pay ±0.005)"
+FoveaHE yeniden eğitim: foveahe_C_beyin_F32_G16_izleme_s0,TUTTU,"AUC 0.9408; makaledeki aynı tohum ve bölmenin modeli 0.9408 (fark +0.0000, tahmin uyumu %100.0, ağırlıklar bit bit aynı); makaledeki 5 tohum aynı bölmede 0.9263–0.9408 (pay ±0.005)"
+FoveaHE yeniden eğitim: foveahe_D2_covidqu_F32_G16_izleme_s0,TUTTU,"AUC 0.9517; makaledeki aynı tohum ve bölmenin modeli 0.9517 (fark +0.0000, tahmin uyumu %100.0, ağırlıklar bit bit aynı); makaledeki 5 tohum aynı bölmede 0.9517–0.9563 (pay ±0.005)"
+FoveaHE yeniden eğitim: foveahe_D_beyin_U512_izleme_s0,TUTTU,"AUC 0.8914; makaledeki aynı tohum ve bölmenin modeli 0.8914 (fark +0.0000, tahmin uyumu %100.0, ağırlıklar bit bit aynı); makaledeki 5 tohum aynı bölmede 0.8660–0.8978 (pay ±0.005)"
+FoveaHE yeniden eğitim: foveahe_D2_covidqu_U256_izleme_s0,TUTTU,"AUC 0.9465; makaledeki aynı tohum ve bölmenin modeli 0.9465 (fark +0.0000, tahmin uyumu %100.0, ağırlıklar bit bit aynı); makaledeki 5 tohum aynı bölmede 0.9442–0.9470 (pay ±0.005)"
+"Kayıtlı tahminlerden makale tabloları (Tablo II, III, V, VIII ve metin)",TUTTU,111/111 değer

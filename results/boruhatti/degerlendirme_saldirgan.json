@@ -1,0 +1,142 @@
+[
+  {
+    "model": "saldirgan_beyin_baglam_tez_s0",
+    "veri": "beyin",
+    "gorus": "baglam",
+    "protokol": "tez",
+    "n": 3064,
+    "auc": 0.9743253921253131,
+    "dogruluk": 0.9122062663185379,
+    "dengeli_dogruluk": 0.9005030335206007,
+    "kesinlik_makro": 0.9004994827690344,
+    "duyarlilik_makro": 0.9005030335206007,
+    "f1_makro": 0.900280131016011,
+    "f1_agirlikli": 0.9115057850037398,
+    "karisiklik": [
+      [
+        563,
+        92,
+        53
+      ],
+      [
+        104,
+        1320,
+        2
+      ],
+      [
+        15,
+        3,
+        912
+      ]
+    ],
+    "makaledeki_ayni_tohum_auc": 0.9759414446636916,
+    "fark": -0.0016160525383784874,
+    "makaledeki_5_tohum_auc": 0.9759160360973613,
+    "makaledeki_5_tohum_std": 0.0007168989587021025
+  },
+  {
+    "model": "saldirgan_beyin_tam_tez_s0",
+    "veri": "beyin",
+    "gorus": "tam",
+    "protokol": "tez",
+    "n": 3064,
+    "auc": 0.9842094270731959,
+    "dogruluk": 0.9347258485639687,
+    "dengeli_dogruluk": 0.9229324648774574,
+    "kesinlik_makro": 0.9270639461572259,
+    "duyarlilik_makro": 0.9229324648774574,
+    "f1_makro": 0.9241089036865405,
+    "f1_agirlikli": 0.933972155580571,
+    "karisiklik": [
+      [
+        588,
+        47,
+        73
+      ],
+      [
+        55,
+        1361,
+        10
+      ],
+      [
+        9,
+        6,
+        915
+      ]
+    ],
+    "makaledeki_ayni_tohum_auc": 0.9842752456200738,
+    "fark": -6.58185468779271e-05,
+    "makaledeki_5_tohum_auc": 0.9843404529892579,
+    "makaledeki_5_tohum_std": 0.001207360731034813
+  },
+  {
+    "model": "saldirgan_covidqu_baglam_tez_s0",
+    "veri": "covidqu",
+    "gorus": "baglam",
+    "protokol": "tez",
+    "n": 6788,
+    "auc": 0.9934041795019567,
+    "dogruluk": 0.953594578668238,
+    "dengeli_dogruluk": 0.9531269884607116,
+    "kesinlik_makro": 0.9529370256824826,
+    "duyarlilik_makro": 0.9531269884607116,
+    "f1_makro": 0.9527595889756348,
+    "f1_agirlikli": 0.9537940867909739,
+    "karisiklik": [
+      [
+        2341,
+        13,
+        41
+      ],
+      [
+        6,
+        2087,
+        160
+      ],
+      [
+        6,
+        89,
+        2045
+      ]
+    ],
+    "makaledeki_ayni_tohum_auc": 0.993313383823048,
+    "fark": 9.07956789086839e-05,
+    "makaledeki_5_tohum_auc": 0.9932040235167541,
+    "makaledeki_5_tohum_std": 0.00012608602984714808
+  },
+  {
+    "model": "saldirgan_covidqu_tam_tez_s0",
+    "veri": "covidqu",
+    "gorus": "tam",
+    "protokol": "tez",
+    "n": 6788,
+    "auc": 0.996656268635625,
+    "dogruluk": 0.9697996464348851,
+    "dengeli_dogruluk": 0.969560846465861,
+    "kesinlik_makro": 0.9691994950589565,
+    "duyarlilik_makro": 0.969560846465861,
+    "f1_makro": 0.9693360282671258,
+    "f1_agirlikli": 0.9698720919462652,
+    "karisiklik": [
+      [
+        2346,
+        19,
+        30
+      ],
+      [
+        9,
+        2166,
+        78
+      ],
+      [
+        5,
+        64,
+        2071
+      ]
+    ],
+    "makaledeki_ayni_tohum_auc": 0.996749643423314,
+    "fark": -9.337478768900453e-05,
+    "makaledeki_5_tohum_auc": 0.9965687587400337,
+    "makaledeki_5_tohum_std": 0.00020892794745233005
+  }
+]

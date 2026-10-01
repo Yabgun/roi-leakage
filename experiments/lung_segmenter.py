@@ -3,7 +3,10 @@
 1) COVID-QU-Ex Train bölmesindeki akciğer maskeleriyle U-Net eğit, Val'de Dice ölç.
 2) Kaggle CXR (train/test) görüntülerine akciğer maskesi üret, `data/processed/kaggle_lung_masks/` altına kaydet.
 
-Çalıştırma: .venv\\Scripts\\python -m experiments.lung_segmenter [--epochs 6]
+`--yalniz-maske`: U-Net yeniden eğitilmez; kayıtlı ağırlıklarla (`--agirlik`, varsayılan
+`results/checkpoints/lung_unet.pt`) yalnızca 2. adım yapılır (`boruhatti.on_isle` bu yolu kullanır).
+
+Çalıştırma: .venv\\Scripts\\python -m experiments.lung_segmenter [--epochs 6] [--yalniz-maske [--agirlik yol]]
 """
 from __future__ import annotations
 
@@ -23,15 +26,12 @@ from common.images import load_gray
 from common.segmentation import UNet, dice_loss, dice_score, postprocess
 from experiments.attack_context import RES, build_cache
 
+AGIRLIK = config.CHECKPOINTS / "lung_unet.pt"
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--epochs", type=int, default=6)
-    ap.add_argument("--batch", type=int, default=32)
-    args = ap.parse_args()
+
+def unet_egit(epochs: int = 6, batch: int = 32, dev: str = "cuda"):
+    """COVID-QU-Ex Train ile U-Net eğitir. Döner: (model, Val Dice)."""
     torch.manual_seed(0)
-    dev = "cuda"
-
     man = pd.read_csv(config.DATA_PROC / "covidqu_manifest.csv")
     imgs, masks = build_cache("covidqu", man.img_path, man.lung_mask_path)
     tr = np.flatnonzero((man.split == "Train").to_numpy())
@@ -39,17 +39,17 @@ def main():
 
     model = UNet().to(dev)
     opt = torch.optim.AdamW(model.parameters(), lr=2e-3, weight_decay=1e-4)
-    steps = args.epochs * math.ceil(len(tr) / args.batch)
+    steps = epochs * math.ceil(len(tr) / batch)
     sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=2e-3, total_steps=steps, pct_start=0.1)
     scaler = torch.amp.GradScaler("cuda")
     rng = np.random.default_rng(0)
     t0 = time.perf_counter()
-    for ep in range(args.epochs):
+    for ep in range(epochs):
         model.train()
         perm = rng.permutation(tr)
         tot = 0.0
-        for i in range(0, len(perm), args.batch):
-            b = torch.from_numpy(perm[i:i + args.batch])
+        for i in range(0, len(perm), batch):
+            b = torch.from_numpy(perm[i:i + batch])
             x = torch.from_numpy(imgs[b.numpy()]).to(dev).float().div_(255).unsqueeze(1)
             y = torch.from_numpy(masks[b.numpy()]).to(dev).float().unsqueeze(1)
             with torch.autocast("cuda", dtype=torch.float16):
@@ -61,7 +61,7 @@ def main():
             scaler.update()
             sched.step()
             tot += float(loss) * len(b)
-        print(f"epoch {ep + 1}/{args.epochs} kayıp={tot / len(perm):.4f} ({time.perf_counter() - t0:.0f} s)", flush=True)
+        print(f"epoch {ep + 1}/{epochs} kayıp={tot / len(perm):.4f} ({time.perf_counter() - t0:.0f} s)", flush=True)
 
     model.eval()
     dices = []
@@ -73,14 +73,23 @@ def main():
             dices += [dice_score(postprocess(p), t) for p, t in zip(pred, masks[b])]
     val_dice = float(np.mean(dices))
     print(f"COVID-QU-Ex Val Dice = {val_dice:.4f}", flush=True)
-    config.CHECKPOINTS.mkdir(parents=True, exist_ok=True)
-    torch.save(model.state_dict(), config.CHECKPOINTS / "lung_unet.pt")
+    return model, val_dice
 
+
+def unet_yukle(yol=AGIRLIK, dev: str = "cuda"):
+    model = UNet().to(dev)
+    model.load_state_dict(torch.load(yol, map_location=dev, weights_only=True))
+    return model.eval()
+
+
+def kaggle_maskeleri(model, dev: str = "cuda") -> dict:
+    """Kaggle CXR görüntülerine akciğer maskesi üretir, manifestoya yollarını yazar. Döner: özet sayılar."""
     kag = pd.read_csv(config.DATA_PROC / "kaggle_cxr_manifest.csv")
     out_dir = config.DATA_PROC / "kaggle_lung_masks"
     out_dir.mkdir(parents=True, exist_ok=True)
     paths, fracs = [], []
-    with torch.no_grad(), torch.autocast("cuda", dtype=torch.float16):
+    amp = dev == "cuda"
+    with torch.no_grad(), torch.autocast("cuda" if amp else "cpu", dtype=torch.float16, enabled=amp):
         for i in range(0, len(kag), 64):
             part = kag.iloc[i:i + 64]
             x = torch.from_numpy(np.stack([load_gray(p, RES) for p in part.img_path])).to(dev).unsqueeze(1)
@@ -94,9 +103,25 @@ def main():
     kag["lung_mask_path"] = paths
     kag["lung_frac"] = fracs
     kag.to_csv(config.DATA_PROC / "kaggle_cxr_manifest.csv", index=False)
-    summary = {"covidqu_val_dice": val_dice, "kaggle_maske_sayisi": len(paths),
-               "kaggle_akciger_orani_medyan": float(np.median(fracs)),
-               "kaggle_akciger_orani_cok_kucuk(<%5)": int((np.array(fracs) < 0.05).sum())}
+    return {"kaggle_maske_sayisi": len(paths), "kaggle_akciger_orani_medyan": float(np.median(fracs)),
+            "kaggle_akciger_orani_cok_kucuk(<%5)": int((np.array(fracs) < 0.05).sum())}
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--epochs", type=int, default=6)
+    ap.add_argument("--batch", type=int, default=32)
+    ap.add_argument("--yalniz-maske", action="store_true", help="eğitme; kayıtlı ağırlıkla yalnız Kaggle maskeleri")
+    ap.add_argument("--agirlik", default=str(AGIRLIK))
+    args = ap.parse_args()
+    dev = "cuda" if torch.cuda.is_available() else "cpu"
+    if args.yalniz_maske:
+        print(kaggle_maskeleri(unet_yukle(args.agirlik, dev), dev))
+        return
+    model, val_dice = unet_egit(args.epochs, args.batch, dev)
+    config.CHECKPOINTS.mkdir(parents=True, exist_ok=True)
+    torch.save(model.state_dict(), AGIRLIK)
+    summary = {"covidqu_val_dice": val_dice, **kaggle_maskeleri(model, dev)}
     with open(config.TABLES / "akciger_segmentasyon.json", "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
     print(summary)

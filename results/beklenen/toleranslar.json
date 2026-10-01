@@ -1,0 +1,11 @@
+{
+  "aciklama": "boruhatti.kontrol'un kullandigi kabul sinirlari. Makaledeki degerler: makale_degerleri.json.",
+  "makale_modelleri_auc": 0.0005,
+  "makale_modelleri_gerekce": "Makaledeki sifreli modellerin agirliklari aynidir; fark yalnizca kayan nokta duzeyindedir (olculen en buyuk tohum farki 3.4e-7). 0.0005, makaledeki 3 basamakli yuvarlamanin yarisidir.",
+  "sifreli_logit_farki": 0.001,
+  "sifreli_gerekce": "CKKS yaklasik bir semadir. Makalede 120 goruntude en buyuk fark 1.6e-4 olculdu; tahmin uyumu %100 olmalidir.",
+  "saldirgan_auc": 0.005,
+  "saldirgan_gerekce": "Saldirgan (ResNet-18) ekran kartinda 16 bit karisik hassasiyet ve cuDNN algoritma secimiyle egitilir; ayni tohumla bile sonuc bit bit tekrarlanmaz. Bu calismanin kendi yeniden kosularinda ayni tohumlu fark +0.0001 ile -0.0016 arasinda olculdu; makaledeki 5 tohumun standart sapmasi 0.0001-0.0012. Farkli bir ekran karti icin pay birakilarak tolerans makaledeki 5 tohum ortalamasindan +-0.005 AUC alindi.",
+  "foveahe_auc_pay": 0.005,
+  "foveahe_gerekce": "Yeniden egitilen sifreli modeller (D, D2, C; tohum 0, makaledeki ilk bolme) bu bilgisayarda makaledeki modellerle bit bit aynidir (5 modelin 5'i; AUC farki 0, tahmin uyumu %100). Baska bir ekran kartinda kayan nokta farki erken durdurmayi ya da agirlik azaltma secimini kaydirabilir; o zaman sonuc en cok bir tohum degisikligi kadar degisir. Kabul: makaledeki 5 tohumun ayni test bolmesindeki AUC araligi +-0.005 (olculen araliklar 0.0028-0.0318)."
+}

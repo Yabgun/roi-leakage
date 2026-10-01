@@ -76,13 +76,15 @@ olduğu için etiketi sızdırır.
 - **Test verisiyle ayar yapılmadı.** Şifreli modellerde ayar doğrulama kümesiyle yapıldı. ResNet-18'de epoch sayısı
   sabittir: beyin 12, COVID-QU-Ex 5.
 
-## 6. Çalıştırma (bugünkü hâli)
+## 6. Çalıştırma
+
+İndirme ve bütün ön işleme iki komuttur:
 
 ```
-.venv\Scripts\python -m experiments.prepare_data
-.venv\Scripts\python -m experiments.lung_segmenter
-.venv\Scripts\python -m experiments.brain_visible_norm
+python -m boruhatti.veri_indir    # Kaggle (hesapsız) ve figshare'den indirir, çalışmadaki veriyle aynı olduğunu doğrular
+python -m boruhatti.on_isle       # bu belgedeki adımların hepsi; çıktısı olan adımı atlar
 ```
 
-FoveaHE katmanları ilk kullanımda kendiliğinden hesaplanır. Veriyi Kaggle ve figshare'den indiren ve bu adımları tek
-komutla çalıştıran yapı, danışman geri bildiriminin sonraki aşamasında eklenecek.
+`boruhatti.on_isle` sırasıyla şu betikleri çağırır: `experiments.prepare_data`, `experiments.lung_segmenter`
+(kayıtlı U-Net ağırlığıyla yalnız maske, ağırlık yoksa eğitim), `experiments.brain_visible_norm`, 224 px önbellekler,
+FoveaHE katmanları ve şifreli özet için ResNet-18 özetleri.

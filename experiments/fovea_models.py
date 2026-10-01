@@ -110,9 +110,10 @@ class VectorData:
             for p in parts:
                 rows = max(1, 64_000_000 // p.shape[1])  # parça başına ~64 MB RAM
                 for s in range(0, n, rows):
-                    self.pix[s:s + rows, col:col + p.shape[1]] = torch.from_numpy(np.ascontiguousarray(p[s:s + rows])).to(device)
+                    # np.array kopyalar: bellek eşlemeli salt okunur dizide torch'un uyarısını önler (değerler aynı)
+                    self.pix[s:s + rows, col:col + p.shape[1]] = torch.from_numpy(np.array(p[s:s + rows])).to(device)
                 col += p.shape[1]
-            self.geom = torch.from_numpy(np.ascontiguousarray(geom)).to(device) if spec.uses_geometry else None
+            self.geom = torch.from_numpy(np.array(geom)).to(device) if spec.uses_geometry else None
         self.n_features = self.n_pix + (3 if self.geom is not None else 0)
 
     def get(self, idx) -> torch.Tensor:
@@ -172,8 +173,11 @@ def mean_loss(model, data, idx, y, device, batch: int = 512) -> float:
     return total / len(idx)
 
 
-def fit(build, data, y, tr, va, seed, device, max_epochs, patience, wd, lr, batch=128):
-    """AdamW; doğrulama kaybı en düşük epoch'un ağırlıkları döner: (model, epoch, doğrulama kaybı)."""
+def fit(build, data, y, tr, va, seed, device, max_epochs, patience, wd, lr, batch=128, izle=None):
+    """AdamW; doğrulama kaybı en düşük epoch'un ağırlıkları döner: (model, epoch, doğrulama kaybı).
+
+    İsteğe bağlı `izle(epoch, model, egitim_kaybi, dogrulama_kaybi)` kancası her epoch sonunda çağrılır (eğitim
+    eğrileri, `boruhatti.egit`). Kanca verilmezse eğitim öncekiyle aynıdır."""
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
     model = build().to(device)
@@ -183,6 +187,7 @@ def fit(build, data, y, tr, va, seed, device, max_epochs, patience, wd, lr, batc
     for ep in range(max_epochs):
         model.train()
         perm = rng.permutation(tr)
+        total, count = 0.0, 0
         for i in range(0, len(perm), batch):
             b = perm[i:i + batch]
             if len(b) < 2:
@@ -191,7 +196,12 @@ def fit(build, data, y, tr, va, seed, device, max_epochs, patience, wd, lr, batc
             opt.zero_grad(set_to_none=True)
             loss.backward()
             opt.step()
+            if izle is not None:
+                total += float(loss.detach()) * len(b)
+                count += len(b)
         val = mean_loss(model, data, va, yt, device)
+        if izle is not None:
+            izle(ep + 1, model, total / max(count, 1), val)
         if val < best_loss - 1e-4:
             best_loss, best_state, best_epoch, bad = val, copy.deepcopy(model.state_dict()), ep + 1, 0
         else:
@@ -202,8 +212,11 @@ def fit(build, data, y, tr, va, seed, device, max_epochs, patience, wd, lr, batc
     return model, best_epoch, best_loss
 
 
-def fit_select(kind, spec, data, y, tr, va, n_classes, seed, device, max_epochs, patience):
-    """Ağırlık azaltma ve (sınırda) öğrenme oranı seçimi. Döner: (model, epoch, wd, lr)."""
+def fit_select(kind, spec, data, y, tr, va, n_classes, seed, device, max_epochs, patience, izle=None):
+    """Ağırlık azaltma ve (sınırda) öğrenme oranı seçimi. Döner: (model, epoch, wd, lr).
+
+    İsteğe bağlı `izle(wd, lr)` her aday ayar için bir `fit` kancası döndürür (eğitim eğrileri); verilmezse seçim
+    öncekiyle aynıdır."""
     if kind == "C":
         plan = layer_plan(spec)
         stats = data.layer_stats(tr, plan)
@@ -217,7 +230,8 @@ def fit_select(kind, spec, data, y, tr, va, n_classes, seed, device, max_epochs,
 
     def run(wd, lr):
         if (wd, lr) not in results:
-            results[(wd, lr)] = fit(build, data, y, tr, va, seed, device, max_epochs, patience, wd, lr)
+            results[(wd, lr)] = fit(build, data, y, tr, va, seed, device, max_epochs, patience, wd, lr,
+                                    izle=izle(wd, lr) if izle is not None else None)
 
     for wd in WD_GRID:
         run(wd, LR)

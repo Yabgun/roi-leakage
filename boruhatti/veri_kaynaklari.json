@@ -1,0 +1,86 @@
+{
+  "aciklama": "Calismada kullanilan veri kumelerinin kaynaklari, surumleri ve parmak izleri. Surum ve dosya bilgileri 1 Ekim 2026'da Kaggle ve figshare'in herkese acik API'lerinden okundu; parmak izleri calismada kullanilan diskteki veriden hesaplandi.",
+  "kumeler": {
+    "covidqu": {
+      "tur": "kaggle",
+      "kaynak": "anasmohammedtahir/covidqu",
+      "surum": 7,
+      "sayfa": "https://www.kaggle.com/datasets/anasmohammedtahir/covidqu",
+      "lisans": "CC BY-SA 4.0",
+      "atif": "Tahir vd., Computers in Biology and Medicine 139 (2021) 105002; doi:10.34740/kaggle/dsv/3122898",
+      "indirme_mb": 1237,
+      "hedef": "data/raw/covid_qu_ex/extracted",
+      "parmak_izi": {
+        "dosya_sayisi": 85319,
+        "toplam_bayt": 1211011783,
+        "sha256_ozet": "d91619f83c600ec21da9b96a6df611d5850913badfefc62b132a442df3e0e314"
+      }
+    },
+    "kaggle_cxr": {
+      "tur": "kaggle",
+      "kaynak": "prashant268/chest-xray-covid19-pneumonia",
+      "surum": 2,
+      "sayfa": "https://www.kaggle.com/datasets/prashant268/chest-xray-covid19-pneumonia",
+      "lisans": "Kaggle sayfasinda belirtilmemis (Unknown)",
+      "indirme_mb": 2300,
+      "hedef": "data/raw/kaggle_cxr",
+      "alt_klasor": "Data",
+      "kullanilan": [
+        "train",
+        "test"
+      ],
+      "parmak_izi": {
+        "dosya_sayisi": 6432,
+        "toplam_bayt": 2300448032,
+        "sha256_ozet": "6ac4d736a9c4e62d274bb701a70409ffabc0c9845de4f3a9eabe1601d228e730"
+      }
+    },
+    "beyin": {
+      "tur": "figshare",
+      "kaynak": "figshare 1512427 (Cheng vd., brain tumor dataset)",
+      "surum": 8,
+      "sayfa": "https://figshare.com/articles/dataset/brain_tumor_dataset/1512427",
+      "doi": "10.6084/m9.figshare.1512427.v8",
+      "lisans": "CC BY 4.0",
+      "hedef": "data/raw/brain_tumor_figshare/zips",
+      "dosyalar": [
+        {
+          "ad": "brainTumorDataPublic_1-766.zip",
+          "bayt": 214401279,
+          "md5": "74b949ad33f042e6e103523091cd1428",
+          "url": "https://ndownloader.figshare.com/files/3381290"
+        },
+        {
+          "ad": "brainTumorDataPublic_767-1532.zip",
+          "bayt": 217848429,
+          "md5": "7e8a875500d2c8a346f270538e29890e",
+          "url": "https://ndownloader.figshare.com/files/3381296"
+        },
+        {
+          "ad": "brainTumorDataPublic_1533-2298.zip",
+          "bayt": 215563856,
+          "md5": "8227bf6080cb71f15a88be8d25c79ae7",
+          "url": "https://ndownloader.figshare.com/files/3381293"
+        },
+        {
+          "ad": "brainTumorDataPublic_2299-3064.zip",
+          "bayt": 231679762,
+          "md5": "b378a80d6174e5317d59eb28430c6652",
+          "url": "https://ndownloader.figshare.com/files/3381302"
+        },
+        {
+          "ad": "cvind.mat",
+          "bayt": 5736,
+          "md5": "5ea82eb3212c9fcb84290ccf0beb486d",
+          "url": "https://ndownloader.figshare.com/files/7005344"
+        },
+        {
+          "ad": "README 2024.txt",
+          "bayt": 3303,
+          "md5": "4188f7c30957e9673c3611613071bd6e",
+          "url": "https://ndownloader.figshare.com/files/51340418"
+        }
+      ]
+    }
+  }
+}

@@ -104,9 +104,13 @@ class CpuCache:
         self.mask = torch.from_numpy(masks)
         self.y = torch.from_numpy(np.array(labels, dtype=np.int64, copy=True))
         self.device = device
-        # Sabitlenmiş (pinned) ara bellekler: CPU->GPU aktarımı eşzamansız ve hızlı olur
-        self._img_buf = torch.empty((max_batch, *images.shape[1:]), dtype=self.img.dtype).pin_memory()
-        self._mask_buf = torch.empty((max_batch, *masks.shape[1:]), dtype=self.mask.dtype).pin_memory()
+        # Sabitlenmiş (pinned) ara bellekler: CPU->GPU aktarımı eşzamansız ve hızlı olur. Ekran kartı yoksa (yalnız
+        # işlemciyle değerlendirme) sabitleme yapılamaz ve gerekmez.
+        pin = device == "cuda" and torch.cuda.is_available()
+        self._img_buf = torch.empty((max_batch, *images.shape[1:]), dtype=self.img.dtype)
+        self._mask_buf = torch.empty((max_batch, *masks.shape[1:]), dtype=self.mask.dtype)
+        if pin:
+            self._img_buf, self._mask_buf = self._img_buf.pin_memory(), self._mask_buf.pin_memory()
 
     def batch(self, idx: np.ndarray, view: str, train: bool, extra_hidden_fn=None):
         idx_t = torch.from_numpy(np.asarray(idx, dtype=np.int64))
@@ -155,33 +159,46 @@ def make_model(n_classes: int) -> nn.Module:
 
 def train_and_predict(cache: CpuCache, train_idx: np.ndarray, test_idx: np.ndarray, view: str, n_classes: int,
                       epochs: int = 5, batch_size: int = 64, lr: float = 3e-4, seed: int = 0,
-                      extra_hidden_fn=None, log=print):
+                      extra_hidden_fn=None, log=print, izle=None):
+    """İsteğe bağlı `izle(olay, bilgi)` kancası eğitim eğrilerini kaydetmek içindir (`boruhatti.egit`, wandb).
+    "adim" olayında adımın kaybı ve öğrenme oranı, "epoch" olayında epoch'un eğitim kaybı, eğitim doğruluğu ve model
+    verilir. Kanca modeli değerlendirme kipine alabilir; her epoch eğitim kipinde başlar. Kanca verilmezse eğitim
+    öncekiyle aynıdır (aynı rastgele sayı dizisi, aynı işlemler)."""
     torch.manual_seed(seed)
     torch.backends.cudnn.benchmark = True
     rng = np.random.default_rng(seed)
     device = cache.device
+    amp = device == "cuda"  # 16 bit karışık hassasiyet yalnız ekran kartında
     model = make_model(n_classes).to(device).to(memory_format=torch.contiguous_format)
     opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     steps = epochs * math.ceil(len(train_idx) / batch_size)
     sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=lr, total_steps=steps, pct_start=0.15)
-    scaler = torch.amp.GradScaler("cuda")
+    scaler = torch.amp.GradScaler("cuda", enabled=amp)
     t0 = time.perf_counter()
-    model.train()
     for ep in range(epochs):
+        model.train()
         perm = rng.permutation(train_idx)
-        total, count = 0.0, 0
+        total, count, correct = 0.0, 0, 0
         for i in range(0, len(perm), batch_size):
             x, y = cache.batch(perm[i:i + batch_size], view, train=True, extra_hidden_fn=extra_hidden_fn)
-            with torch.autocast("cuda", dtype=torch.float16):
-                loss = F.cross_entropy(model(x.contiguous(memory_format=torch.contiguous_format)), y)
+            with torch.autocast("cuda" if amp else "cpu", dtype=torch.float16 if amp else torch.bfloat16, enabled=amp):
+                out = model(x.contiguous(memory_format=torch.contiguous_format))
+                loss = F.cross_entropy(out, y)
             opt.zero_grad(set_to_none=True)
+            lr_now = opt.param_groups[0]["lr"]
             scaler.scale(loss).backward()
             scaler.step(opt)
             scaler.update()
             sched.step()
-            total += float(loss) * len(y)
+            total += float(loss.detach()) * len(y)
             count += len(y)
+            if izle is not None:
+                correct += int((out.detach().argmax(1) == y).sum())
+                izle("adim", {"kayip": float(loss.detach()), "ogrenme_orani": lr_now})
         log(f"    epoch {ep + 1}/{epochs} kayıp={total / count:.4f} ({time.perf_counter() - t0:.0f} s)")
+        if izle is not None:
+            izle("epoch", {"epoch": ep + 1, "egitim_kaybi": total / count, "egitim_dogrulugu": correct / count,
+                           "model": model, "sure_s": time.perf_counter() - t0})
     # Değerlendirme fp32 ve karışık sırada yapılır: fp16 sayısal gürültüsü sınıfa göre sıralı test indeksleriyle
     # hizalanıp sahte AUC üretmesin (tanı: tamamen gizli görüşte fp16 + sıralı AUC 0.421, fp32 + karışık 0.500).
     model.eval()

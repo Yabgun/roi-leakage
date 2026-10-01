@@ -8,3 +8,10 @@ results/preds/
 *.pt
 *.pth
 *.bin
+# Eğitilen ve indirilen model dosyaları (boyut; ayrıca yayımlanır)
+modeller/
+# Tek görüntü tahmin denemelerinin ve dış klasör kopya taramalarının çıktıları (kullanıcıya özel)
+results/boruhatti/tahmin/
+results/boruhatti/kopya_*.csv
+# wandb yerel kayıtları
+wandb/

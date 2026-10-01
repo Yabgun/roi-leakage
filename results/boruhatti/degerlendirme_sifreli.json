@@ -1,0 +1,29 @@
+[
+  {
+    "veri": "beyin MR (Cheng)",
+    "model": "Model D",
+    "temsil": "F32_G16",
+    "goruntu": 9,
+    "en_buyuk_logit_farki": 2.2810769242820328e-05,
+    "tahmin_uyumu": 1.0,
+    "goruntu_basina_s": 1.200337477778602
+  },
+  {
+    "veri": "beyin MR (Cheng)",
+    "model": "Model C",
+    "temsil": "F32_G16",
+    "goruntu": 9,
+    "en_buyuk_logit_farki": 7.705915043842992e-05,
+    "tahmin_uyumu": 1.0,
+    "goruntu_basina_s": 0.47315573332727784
+  },
+  {
+    "veri": "akciğer grafisi (COVID-QU-Ex)",
+    "model": "Model D2",
+    "temsil": "F32_G16",
+    "goruntu": 9,
+    "en_buyuk_logit_farki": 7.015881039196259e-05,
+    "tahmin_uyumu": 1.0,
+    "goruntu_basina_s": 1.2667475999850366
+  }
+]
