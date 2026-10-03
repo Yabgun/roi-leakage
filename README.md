@@ -1,7 +1,7 @@
 # Sağlık Verilerinde Homomorfik Şifreleme ve Zafiyet Analizi
 
-Bu depo, aynı adlı bildirinin (B. Tutumlu, A. Uğur; Pamukkale Üniversitesi, 2026) kodunu, yeniden üretim adımlarını ve
-model ağırlıklarının bağlantısını içerir. İki soru vardır:
+Bu depo, aynı adlı bildirinin (B. Tutumlu, A. Uğur, V. Tataroğlu; Pamukkale Üniversitesi, 2026) kodunu, yeniden üretim
+adımlarını ve model ağırlıklarının bağlantısını içerir. İki soru vardır:
 
 1. **Sızıntı.** Görüntünün yalnız ilgi bölgesini (ROI) şifreleyen yöntem (Π_ROI), sunucuya açık kalan bağlamdan teşhisi
    ele veriyor mu? Bunu ölçen modeller saldırganlardır.
