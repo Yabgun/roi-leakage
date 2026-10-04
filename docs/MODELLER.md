@@ -133,9 +133,9 @@ Yorum:
 - **COVID-QU-Ex saldırganında** eğitim ve doğrulama arasında 2 puanlık fark var. Doğrulama kaybı en düşük değerine
   4. epoch'ta iner (0.173); 5. epoch'ta hafifçe 0.183'e çıkar.
 - **Şifreli modeller** erken durdurmayla eğitilir. Doğrulama kaybı 10 epoch iyileşmeyince eğitim durur ve doğrulama
-  kaybının en iyi olduğu epoch'un ağırlıkları kullanılır. En iyi epoch'tan sonra doğrulama kaybı yükselir (ör.
-  COVID-QU-Ex Model D2: 15. epoch'ta 0.473, 21. epoch'ta 0.520); bu sonraki epoch'lardaki ezberleme kullanılan modele
-  yansımaz.
+  kaybının en iyi olduğu epoch'un ağırlıkları kullanılır. En iyi epoch'tan sonra doğrulama kaybı iyileşmez; beş
+  koşunun dördünde son epoch'ta en iyi değerin 0.004–0.14 üstündedir (ör. COVID-QU-Ex Model D2: 15. epoch'ta 0.473,
+  21. epoch'ta 0.520), beyin MR Model D'de ise düz kalır. Sonraki epoch'lardaki ezberleme kullanılan modele yansımaz.
 - **Beyin MR'da eğitim–doğrulama farkı büyüktür.** FoveaHE modellerinde fark 0.11–0.15, COVID-QU-Ex'te 0.05'tir.
   Beyin MR'da 1 843 eğitim görüntüsü vardır, COVID-QU-Ex'te 21 715. En büyük fark tam görüntü modelindedir (U512):
   262 144 girdiye karşılık 1 843 eğitim görüntüsü. FoveaHE temsilinde (1 283 değer) fark daha küçüktür ve doğrulama
@@ -184,7 +184,7 @@ hasta kaynağını paylaştığından bu test tamamen bağımsız bir hastane te
 **4. Eğitim eğrileri** (yukarıdaki bölüm). Beyin MR saldırganında doğrulama kaybı yalnız öğrenme oranının yüksek
 olduğu ara epoch'larda geçici olarak yükselir; eğitim doğruluğu %100'e ulaştıktan sonra en düşük düzeyine yakın kalır.
 COVID-QU-Ex saldırganında son epoch'ta hafif bir artış vardır (0.173'ten 0.183'e). Şifreli modellerde doğrulama kaybı
-en iyi epoch'tan sonra yükselir; erken durdurma o epoch'un ağırlıklarını kullanır.
+en iyi epoch'tan sonra iyileşmez, çoğu koşuda yükselir; erken durdurma o epoch'un ağırlıklarını kullanır.
 
 Makalenin kendi sınırlılığı olarak: COVID-QU-Ex birden çok kaynaktan derlendiği için çekim koşullarına bağlı karıştırıcı
 etkenler mutlak AUC değerlerini yükseltmiş olabilir. Bu, ezberle değil veri kümesinin yapısıyla ilgilidir.
