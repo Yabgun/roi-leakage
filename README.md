@@ -112,10 +112,11 @@ argümanlar yazıldığı gibi verilmelidir. Liste, sonuçları üreten kuyrukla
 içinde). Kademe 2 uçtan uca yeniden sınanmamıştır.
 
 **Önce sonuç ve tahmin klasörlerini yeniden adlandırın.** Betikler yarıda kalan işi sürdürmek için sonuç tablosunda
-bulunan satırları atlar ve depo bu çalışmanın tablolarıyla gelir; klasörler yeniden adlandırılmazsa Saldırı B, şifreli
-modeller, bilgi düzeyi, bütçe taraması ve bozuk bağlam deneyleri çalışmadan biter. Betikler ayrıca `results\preds`
-altındaki kayıtlı tahminlerin üzerine yazar. Makaledeki tablolar ve tahminler karşılaştırma için eski adlarıyla kalır;
-Kademe 0 ve 1'i yeniden çalıştırmadan önce klasörleri eski adlarına döndürün.
+bulunan koşuları atlar ve depo bu çalışmanın tablolarıyla gelir; klasörler yeniden adlandırılmazsa bu koşular (ör.
+Saldırı B'nin beyin MR koşuları, şifreli modeller, bilgi düzeyi ve bütçe taraması) çalışmaz. Betikler ayrıca
+`results\preds` altındaki kayıtlı tahminlerin üzerine yazar. Aşağıdaki komutlardan sonra makaledeki tablolar ve
+tahminler karşılaştırma için `results\tables_makale` ve `results\preds_makale` altında kalır; Kademe 0 ve 1'i yeniden
+çalıştırmadan önce bu iki klasörü eski adlarına döndürün.
 
 ```bat
 ren results\tables tables_makale

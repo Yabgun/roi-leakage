@@ -126,10 +126,10 @@ Yorum:
   saldırganında doğrulama AUC 0.961'den 0.981'e, COVID-QU-Ex saldırganında 0.980'den 0.987'ye çıkıyor. Model C'de
   doğrulama doğruluğu 0.67'den 0.84'e çıkıyor.
 - **Beyin MR saldırganı eğitim kümesini ezberliyor**, ama bu doğrulama başarımını düşürmüyor. Eğitim doğruluğu
-  10. epoch'tan itibaren %100'dür. Doğrulama kaybı, öğrenme oranının yüksek olduğu ilk yarıda iki kez geçici olarak
-  yükselir: 2–3. epoch'ta 0.48'e (öğrenme oranı 2. epoch'ta tepe değerindedir) ve 6–7. epoch'ta 0.54'e (öğrenme oranı
-  bu sırada tepe değerinin yaklaşık %78'inden %48'ine iner). Bu epoch'larda doğrulama doğruluğu da geçici olarak
-  0.83–0.84'e düşer, sonra yeniden yükselir. Eğitim doğruluğunun %100 olduğu 10–12. epoch'larda doğrulama kaybı
+  10. epoch'tan itibaren %100'dür. Doğrulama kaybı, öğrenme oranının henüz yüksek olduğu ilk 7 epoch'ta iki kez geçici
+  olarak yükselir: 2–3. epoch'ta 0.48'e (öğrenme oranı 2. epoch'ta tepe değerindedir) ve 6–7. epoch'ta 0.54'e (öğrenme
+  oranı bu sırada tepe değerinin yaklaşık %77'sinden yarısına iner). Bu epoch'larda doğrulama doğruluğu da geçici
+  olarak 0.83–0.87'ye düşer, sonra yeniden yükselir. Eğitim doğruluğunun %100 olduğu 10–12. epoch'larda doğrulama kaybı
   0.305–0.300'de sabittir; son epoch'taki değer (0.2996) en düşük değere (0.2975, 4. epoch) çok yakındır. Doğrulama
   doğruluğu son 5 epoch'ta 0.906–0.909 arasında sabittir. Yükselişler kalıcı değildir; makale sonuçlarında kullanılan
   sabit 12 epoch ayarı doğrulama başarımını bozmuyor.
@@ -184,8 +184,8 @@ Kaggle görüntülerinde akciğerler gizliyken normal ile pnömoniyi AUC 0.998 i
 görüntüsünde değerlendirildiğinde temsiller arasındaki sıralama korunur. Makalede belirtildiği gibi iki küme aynı çocuk
 hasta kaynağını paylaştığından bu test tamamen bağımsız bir hastane testi değildir.
 
-**4. Eğitim eğrileri** (yukarıdaki bölüm). Beyin MR saldırganında doğrulama kaybı öğrenme oranının yüksek olduğu ilk
-yarıda iki kez geçici olarak yükselir (2–3. ve 6–7. epoch); eğitim doğruluğu %100'e ulaştıktan sonra en düşük düzeyine
+**4. Eğitim eğrileri** (yukarıdaki bölüm). Beyin MR saldırganında doğrulama kaybı öğrenme oranının henüz yüksek olduğu
+ilk 7 epoch'ta iki kez geçici olarak yükselir (2–3. ve 6–7. epoch); eğitim doğruluğu %100'e ulaştıktan sonra en düşük düzeyine
 yakın kalır.
 COVID-QU-Ex saldırganında son epoch'ta hafif bir artış vardır (0.173'ten 0.183'e). Şifreli modellerde doğrulama kaybı
 en iyi epoch'tan sonra iyileşmez, çoğu koşuda yükselir; erken durdurma o epoch'un ağırlıklarını kullanır.
