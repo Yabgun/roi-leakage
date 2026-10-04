@@ -19,7 +19,8 @@ Protokoller (`--protokol`):
   - Şifreli modeller: tez protokolünün ilk bölmesi (beyinde test katı 1, doğrulama katı 2; COVID-QU-Ex'te Train / Val /
     Test). Makaledeki eğitim de doğrulama kümesiyle erken durdurduğu için bu koşu makaledeki ilk bölmenin aynısıdır.
     Eğitimden sonra test bölmesinde ölçülür; `degerlendir --foveahe` makaledeki modelle karşılaştırır.
-  - Her epoch'ta eğitim ve doğrulama kaybı, doğruluğu, makro F1 ve AUC kaydedilir; her adımda öğrenme oranı.
+  - Her epoch'ta eğitim ve doğrulama kaybı, doğruluğu, makro F1 ve AUC kaydedilir; saldırganda ayrıca her adımda
+    öğrenme oranı ve kayıp (şifreli modeller sabit öğrenme oranıyla eğitilir).
 
 Kayıt (`modeller/<ad>/`):
 - ağırlıklar: saldırganda `.pt`, şifreli modellerde `.pt` ve CKKS'e hazır `.npz`

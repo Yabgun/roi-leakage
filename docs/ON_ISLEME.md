@@ -26,7 +26,7 @@ olmadığından hasta bazlı bölme için özgün `.mat` dosyaları kullanılmı
 | B2 | Kesit başına yoğunluk ölçekleme | 0.5 ve 99.5 yüzdelikleri arası → [0, 255] | `experiments/prepare_data.py:158-159` | Ham MR yoğunluklarının ölçeği kesitten kesite değişir |
 | B3 | Tümör maskesinin ikili PNG'ye yazılması | 0 / 255 | `experiments/prepare_data.py:162` | ROI = tümör maskesi |
 | B4 | Resmi 5 katın atanması | `cvind.mat` | `experiments/prepare_data.py:136-145, 167-168` | Hasta bazlı bölme; hiçbir hasta iki katta yok (doğrulandı) |
-| B5 | Görünür piksel normalizasyonu (bağlam saldırısı, kök neden, savunma, bozuk bağlam) | Ham yoğunluk 224×224 bilineer önbellek; 0.5–99.5 yüzdelikleri **yalnız sunucunun gördüğü piksellerden** | `experiments/brain_visible_norm.py:39-76`, `attacks/context_cnn.py:69-78, 124-147` | Tüm piksellerle ölçekleme, gizli tümörün parlaklığını açık piksellerin ölçeğine taşıyabilir. Gerçek sunucu bunu göremez. Makalede Tablo III'ün beyin sayıları bu düzenle hesaplanmıştır. |
+| B5 | Görünür piksel normalizasyonu (bağlam saldırısı, kök neden, savunma, bozuk bağlam) | Ham yoğunluk 224×224 bilineer önbellek; 0.5–99.5 yüzdelikleri **yalnız sunucunun gördüğü piksellerden** | `experiments/brain_visible_norm.py:39-76`, `attacks/context_cnn.py:69-78, 128-151` | Tüm piksellerle ölçekleme, gizli tümörün parlaklığını açık piksellerin ölçeğine taşıyabilir. Gerçek sunucu bunu göremez. Makalede Tablo III'ün beyin sayıları bu düzenle hesaplanmıştır. |
 
 Görüntü boyutları: 3049 kesit 512×512, 15 kesit 256×256. CNN deneylerinde hepsi 224×224'e küçültülür (madde 4).
 FoveaHE temsili ise dağıtıldığı çözünürlükten çıkarılır.

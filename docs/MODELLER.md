@@ -94,21 +94,22 @@ farkı 0, tahmin uyumu %100.
 | COVID-QU-Ex | D2 | U256 (tam görüntü) | resmi Test | 0.9465 | 0.9465 | 0.9442–0.9470 |
 
 Makaledeki Tablo V değeri beyin MR'da 5 katın birleşik sonucudur. İlk satırdaki 5 tohumun ortalaması (0.9479),
-Tablo V'deki 0.948'dir. "Kat 1" satırları ise yalnız ilk katın 542 test görüntüsünü kapsar. Başka bir ekran kartında
+Tablo V'teki 0.948'dir. "Kat 1" satırları ise yalnız ilk katın 542 test görüntüsünü kapsar. Başka bir ekran kartında
 kayan nokta farkı erken durdurmayı kaydırabilir. Kabul sınırı bu yüzden makaledeki 5 tohumun aynı bölmedeki AUC
 aralığı ±0.005'tir.
 
 ## Eğitim oldu mu, ezberleme var mı (izleme koşuları)
 
 İzleme koşularında (`--protokol izleme`) model her epoch'ta eğitimden ayrı bir doğrulama kümesinde ölçülür. Test
-kümesi eğitimde ve model seçiminde kullanılmaz. Kayıtlar yerelde ve wandb'dedir: her adımda öğrenme oranı ve kayıp;
-her epoch'ta eğitim/doğrulama kaybı, doğruluk, makro F1 ve AUC. Tablo: `results/tables/izleme_ozet.md`; ham eğriler:
+kümesi eğitimde ve model seçiminde kullanılmaz. Kayıtlar yerelde ve wandb'dedir: bütün modellerde her epoch'ta
+eğitim/doğrulama kaybı, doğruluk, makro F1 ve AUC; saldırganda ayrıca her adımın öğrenme oranı ve kaybı (şifreli
+modeller sabit öğrenme oranıyla eğitilir; seçilen değer aşağıdaki tabloda). Tablo: `results/tables/izleme_ozet.md`; ham eğriler:
 `results/tables/izleme/`; şekiller: `results/figures/izleme_saldirgan.png`, `izleme_foveahe.png`.
 
 Saldırganın izleme koşusu makaledeki saldırgan eğitiminden ayrıdır. Ayrı bir doğrulama kümesi gerektiği için beyin MR'da
 kat 2 doğrulama, kat 3–5 eğitimdir (1 843 görüntü). Makaledeki saldırgan doğrulama kümesi kullanmaz; test katı 1 iken
-kalan 4 katın 2 522 görüntüsüyle eğitilir. Şifreli modellerin izleme koşusu ise makaledeki ilk bölmenin aynısıdır (makaledeki eğitim de
-doğrulama kümesiyle erken durdurur).
+kalan 4 katın 2 522 görüntüsüyle eğitilir. Şifreli modellerin izleme koşusu ise makaledeki ilk bölmenin aynısıdır
+(makaledeki eğitim de doğrulama kümesiyle erken durdurur).
 
 | Veri | Model | Seçilen ayar | Epoch (durduğu) | Kullanılan ağırlık | Eğitim doğruluğu | Doğrulama doğruluğu | Fark | Doğrulama AUC |
 |---|---|---|---|---|---|---|---|---|
@@ -125,11 +126,13 @@ Yorum:
   saldırganında doğrulama AUC 0.961'den 0.981'e, COVID-QU-Ex saldırganında 0.980'den 0.987'ye çıkıyor. Model C'de
   doğrulama doğruluğu 0.67'den 0.84'e çıkıyor.
 - **Beyin MR saldırganı eğitim kümesini ezberliyor**, ama bu doğrulama başarımını düşürmüyor. Eğitim doğruluğu
-  10. epoch'tan itibaren %100'dür. Doğrulama kaybı, öğrenme oranının hâlâ yüksek olduğu 6–7. epoch'larda geçici olarak
-  yükselir (0.43 ve 0.54; öğrenme oranı bu sırada tepe değerinin yaklaşık %78'inden %48'ine iner), sonra yeniden düşer.
-  Eğitim doğruluğunun %100 olduğu 10–12. epoch'larda doğrulama kaybı 0.305–0.300'de sabittir; son epoch'taki değer
-  (0.2996) en düşük değere (0.2975, 4. epoch) çok yakındır. Doğrulama doğruluğu son 5 epoch'ta 0.906–0.909 arasında
-  sabittir. Makale sonuçlarında kullanılan sabit 12 epoch ayarı bu yüzden doğrulama başarımını bozmuyor.
+  10. epoch'tan itibaren %100'dür. Doğrulama kaybı, öğrenme oranının yüksek olduğu ilk yarıda iki kez geçici olarak
+  yükselir: 2–3. epoch'ta 0.48'e (öğrenme oranı 2. epoch'ta tepe değerindedir) ve 6–7. epoch'ta 0.54'e (öğrenme oranı
+  bu sırada tepe değerinin yaklaşık %78'inden %48'ine iner). Bu epoch'larda doğrulama doğruluğu da geçici olarak
+  0.83–0.84'e düşer, sonra yeniden yükselir. Eğitim doğruluğunun %100 olduğu 10–12. epoch'larda doğrulama kaybı
+  0.305–0.300'de sabittir; son epoch'taki değer (0.2996) en düşük değere (0.2975, 4. epoch) çok yakındır. Doğrulama
+  doğruluğu son 5 epoch'ta 0.906–0.909 arasında sabittir. Yükselişler kalıcı değildir; makale sonuçlarında kullanılan
+  sabit 12 epoch ayarı doğrulama başarımını bozmuyor.
 - **COVID-QU-Ex saldırganında** eğitim ve doğrulama arasında 2 puanlık fark var. Doğrulama kaybı en düşük değerine
   4. epoch'ta iner (0.173); 5. epoch'ta hafifçe 0.183'e çıkar.
 - **Şifreli modeller** erken durdurmayla eğitilir. Doğrulama kaybı 10 epoch iyileşmeyince eğitim durur ve doğrulama
@@ -181,8 +184,9 @@ Kaggle görüntülerinde akciğerler gizliyken normal ile pnömoniyi AUC 0.998 i
 görüntüsünde değerlendirildiğinde temsiller arasındaki sıralama korunur. Makalede belirtildiği gibi iki küme aynı çocuk
 hasta kaynağını paylaştığından bu test tamamen bağımsız bir hastane testi değildir.
 
-**4. Eğitim eğrileri** (yukarıdaki bölüm). Beyin MR saldırganında doğrulama kaybı yalnız öğrenme oranının yüksek
-olduğu ara epoch'larda geçici olarak yükselir; eğitim doğruluğu %100'e ulaştıktan sonra en düşük düzeyine yakın kalır.
+**4. Eğitim eğrileri** (yukarıdaki bölüm). Beyin MR saldırganında doğrulama kaybı öğrenme oranının yüksek olduğu ilk
+yarıda iki kez geçici olarak yükselir (2–3. ve 6–7. epoch); eğitim doğruluğu %100'e ulaştıktan sonra en düşük düzeyine
+yakın kalır.
 COVID-QU-Ex saldırganında son epoch'ta hafif bir artış vardır (0.173'ten 0.183'e). Şifreli modellerde doğrulama kaybı
 en iyi epoch'tan sonra iyileşmez, çoğu koşuda yükselir; erken durdurma o epoch'un ağırlıklarını kullanır.
 

@@ -72,8 +72,9 @@ bunları doğru klasörlere indirir (Kademe 0 ve 1 bunu kendisi yapar).
 
 ## Eğitim kayıtları ve ezber denetimi
 
-- Her eğitimde her adımın öğrenme oranı ve kaybı, her epoch'un eğitim ve doğrulama kaybı, doğruluğu, makro F1'i ve
-  AUC'si yerelde `modeller/<ad>/<bölüm>/egitim_egrisi_*.csv|png` dosyalarına yazılır.
+- Her eğitimde her epoch'un eğitim ve doğrulama kaybı, doğruluğu, makro F1'i ve AUC'si, saldırganda ayrıca her adımın
+  öğrenme oranı ve kaybı yerelde `modeller/<ad>/<bölüm>/egitim_egrisi_*.csv|png` dosyalarına yazılır. Şifreli modeller
+  sabit öğrenme oranıyla eğitilir.
 - `wandb login` yapılmışsa aynı kayıtlar Weights & Biases'a da gider. İstenmezse `calistir.py --wandb-kapali`.
 - Özet ve yorum: `docs/MODELLER.md` ("Eğitim oldu mu, ezberleme var mı" ve "Sonuçlar ezbere mi dayanıyor?"),
   `results/tables/izleme_ozet.md`, `results/tables/ezber_denetimi.md`, `results/figures/izleme_*.png`.
@@ -110,8 +111,21 @@ argümanlar yazıldığı gibi verilmelidir. Liste, sonuçları üreten kuyrukla
 `run_seeds_resume.ps1`, `run_fovea_*.ps1`; tohum tekrarları ve inceleme sonrası deneyler `experiments/queue_progress.py`
 içinde). Kademe 2 uçtan uca yeniden sınanmamıştır.
 
-`--norm gorunur` yalnız beyin MR'da kullanılır ve çıktılarını `_gnorm` ekli ayrı dosyalara yazar. Makalenin beyin MR
-tablolarında bu dosyalar, göğüs röntgeninde ve metindeki normalizasyon karşılaştırmasında varsayılan koşu kullanılır.
+**Önce sonuç ve tahmin klasörlerini yeniden adlandırın.** Betikler yarıda kalan işi sürdürmek için sonuç tablosunda
+bulunan satırları atlar ve depo bu çalışmanın tablolarıyla gelir; klasörler yeniden adlandırılmazsa Saldırı B, şifreli
+modeller, bilgi düzeyi, bütçe taraması ve bozuk bağlam deneyleri çalışmadan biter. Betikler ayrıca `results\preds`
+altındaki kayıtlı tahminlerin üzerine yazar. Makaledeki tablolar ve tahminler karşılaştırma için eski adlarıyla kalır;
+Kademe 0 ve 1'i yeniden çalıştırmadan önce klasörleri eski adlarına döndürün.
+
+```bat
+ren results\tables tables_makale
+ren results\preds preds_makale
+mkdir results\preds
+```
+
+`--norm gorunur` yalnız beyin MR normalizasyonunu değiştirir ve çıktılarını `_gnorm` ekli ayrı dosyalara yazar.
+Makalenin beyin MR sonuçlarında bu dosyalar kullanılır; Grad-CAM yüzdeleri ve Şekil 2 iki veri kümesinde de `_gnorm`
+ekli koşudandır. Göğüs röntgeninin öteki sonuçları ve metindeki normalizasyon karşılaştırması varsayılan koşudan gelir.
 
 ```bat
 rem Π_ROI'nin yeniden üretimi ve maliyeti (Bulgular A; savunma ve maliyet tablolarındaki hız kazançları)
@@ -140,7 +154,7 @@ rem FoveaHE bilgi düzeyi (Bulgular metni)
 .venv\Scripts\python -m experiments.fovea_info --dataset brain --configs tam tam_pencere F32_G16 F64_G32 U32 U32_pencere U64 U64_pencere U90 U90_pencere --seeds 0 1 2 3 4
 .venv\Scripts\python -m experiments.fovea_info --dataset covidqu --configs tam F32_G16 F64_G32 U32 U64 --seeds 0 1 2 3 4
 .venv\Scripts\python -m experiments.fovea_info --plot-only
-rem Şifreli çalışabilen modeller (Tablo V ve IX)
+rem Şifreli çalışabilen modeller (Tablo V)
 .venv\Scripts\python -m experiments.fovea_models --dataset brain --configs U512 F32_G16 F64_G32 U64 U64_pencere --seeds 0 1 2 3 4 --device cuda
 .venv\Scripts\python -m experiments.fovea_models --dataset covidqu --configs U256 F32_G16 F64_G32 U64 U64_pencere --seeds 0 1 2 3 4 --device cuda
 rem Şifreli çıkarımın doğruluğu ve maliyeti (Tablo VI) ve sızıntı denetimi (Tablo VII)
@@ -160,7 +174,10 @@ rem Dış veride genelleme, bütçe taraması (tek tohum) ve birleşik özet (Ta
 .venv\Scripts\python -m experiments.fovea_pareto
 ```
 
-Çıktılar `results/tables/` ve `results/figures/` altına yazılır; bu çalışmanın kendi çıktıları depoda aynı yerdedir.
+Çıktılar `results/tables/`, `results/preds/` ve `results/figures/` altına yazılır. Tablo IX'daki doğruluk, kesinlik,
+duyarlılık ve F1 değerleri ile makaleyle eşleşme denetimi, makaledeki koşuların kayıtlı tahminlerinden
+`analysis.metrikler` ile hesaplanır (Kademe 0 ve 1'in adımı; bir değer bile makaledekinden farklıysa tablo yazılmaz ve
+tutmayan değerler listelenir).
 
 Not: RTX 2070 ve cuDNN 9.10'da `channels_last` bellek düzeni saldırgan eğitimini ~7.5 kat yavaşlattığı için
 kullanılmaz (adım başına 529 ms yerine 71 ms).
