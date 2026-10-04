@@ -58,7 +58,7 @@ olduğu için etiketi sızdırır.
 |  | Sunucu görüşü | Gizli bölge pikselleri 0; 3 kanal = [görünür, görünür, gizli bölge göstergesi] | `attacks/context_cnn.py:45-66` |
 |  | Normalizasyon | ImageNet ortalama/std (gösterge kanalı 0.5/0.5) | `attacks/context_cnn.py:20-21` |
 |  | Artırma (yalnız eğitimde) | Rastgele kaydırma ±%4, ölçek 0.93–1.07; görüntü ve maskeye aynı dönüşüm | `attacks/context_cnn.py:81-95` |
-|  | Değerlendirme | 32 bit hassasiyet, karışık sıra (sahte AUC'ye karşı) | `attacks/context_cnn.py:185-207` |
+|  | Değerlendirme | 32 bit hassasiyet, karışık sıra (sahte AUC'ye karşı) | `attacks/context_cnn.py:202-213` |
 | Meta veri saldırganı (HistGradientBoosting) | Maske 256×256 (en yakın komşu); 4 grupta 23 öznitelik: girdi boyutu, konum, büyüklük, şekil | – | `experiments/attack_metadata.py:26, 44-53`, `attacks/metadata.py:11-53` |
 | FoveaHE temsili (Model D, D2, C) | Odak penceresi: ROI kutusunun merkezi; kenar = büyük kenar × 1.25, en az görüntü kenarının %10'u | – | `foveahe/representation.py:24-26, 130-152` |
 |  | Alan ortalamalı örnekleme (roi_align) ve 8 bit nicemleme | Odak F×F, genel bakış G×G (ör. F32_G16) | `foveahe/representation.py:155-167`, `foveahe/data.py:89-119` |

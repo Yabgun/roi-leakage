@@ -11,6 +11,9 @@
 - Sızıntıyı gösteren: **bağlam saldırganı (ResNet-18), Π_ROI görüşü** (Tablo III, "Bağlam" satırı).
 - Önerilen yöntemin modeli: **FoveaHE F32_G16 + Model D** (beyin MR) ve **+ Model D2** (göğüs röntgeni) (Tablo V, VIII).
 
+Bu iki modelin ve karşılaştırma için tam görüntüyle eğitilen Model D/D2'nin (Π_ROI'nin teşhis modeli) doğruluk, makro
+kesinlik, duyarlılık ve F1 değerleri makalenin Tablo IX'undadır.
+
 Etiketler ve her modelin girdisi/çıktısı: `docs/ETIKETLER.md`.
 
 ## Model haritası
@@ -18,11 +21,11 @@ Etiketler ve her modelin girdisi/çıktısı: `docs/ETIKETLER.md`.
 | Model | Makalede | Rolü | Mimari | Girdi | Tanım (kod) | Eğitim / çalıştırma |
 |---|---|---|---|---|---|---|
 | Meta veri saldırganı | Tablo II | Saldırgan | HistGradientBoosting (300 yineleme, öğrenme oranı 0.05, 15 yaprak) | ROI konum/büyüklük/şekil + girdi boyutu (23 öznitelik) | `experiments/attack_metadata.py:29-31`, `attacks/metadata.py` | `python -m experiments.attack_metadata` (tablo), `python -m analysis.saldiri_a_tahmin` (tahmin kaydı) |
-| Bağlam saldırganı | Tablo III, VIII | Saldırgan | ImageNet ön eğitimli ResNet-18, son katman 3 sınıf | Sunucunun gördüğü 224×224 görüntü (ROI sıfır) + gizli bölge göstergesi | `attacks/context_cnn.py:150-153` | `python -m experiments.attack_context` (AdamW, OneCycle en çok 3e-4, yığın 64; beyin 12, COVID-QU-Ex 5 epoch) |
-| ResNet-18 bilgi üst sınırı | Metin (FoveaHE bilgi düzeyi) | Ölçüm aracı | Bağlam saldırganıyla aynı ağ, gizli bölge yok | FoveaHE temsilinden geri çizilen 224×224 görüntü | `attacks/context_cnn.py:150-196` | `python -m experiments.fovea_info` |
+| Bağlam saldırganı | Tablo III, VIII, IX | Saldırgan | ImageNet ön eğitimli ResNet-18, son katman 3 sınıf | Sunucunun gördüğü 224×224 görüntü (ROI sıfır) + gizli bölge göstergesi | `attacks/context_cnn.py:154-157` | `python -m experiments.attack_context` (AdamW, OneCycle en çok 3e-4, yığın 64; beyin 12, COVID-QU-Ex 5 epoch) |
+| ResNet-18 bilgi üst sınırı | Metin (FoveaHE bilgi düzeyi) | Ölçüm aracı | Bağlam saldırganıyla aynı ağ, gizli bölge yok | FoveaHE temsilinden geri çizilen 224×224 görüntü | `attacks/context_cnn.py:154-213` | `python -m experiments.fovea_info` |
 | Π_ROI hesaplaması (kurban) | Bulgular, maliyet | Yeniden üretim | İki lineer tur: M1 (20×n), M2 (10×20), rastgele ağırlık | Seçici şifreli görüntü | `he/piroi.py:45-112` | `python -m experiments.piroi_benchmark` (eğitim yok) |
-| Model D | Tablo V, VIII | Şifreli teşhis | İki tam bağlantılı katman, 20 gizli birim, aktivasyon yok (Π_ROI'nin iki turunun eğitilmiş karşılığı) | Tam görüntü (= Π_ROI'nin teşhis modeli) ya da FoveaHE temsili | `foveahe/he_models.py:37-45` | `python -m experiments.fovea_models` |
-| Model D2 | Tablo V, VIII | Şifreli teşhis | Model D + yığın normalizasyonu + kare aktivasyon | Aynı | `foveahe/he_models.py:37-45` | Aynı |
+| Model D | Tablo V, VIII, IX | Şifreli teşhis | İki tam bağlantılı katman, 20 gizli birim, aktivasyon yok (Π_ROI'nin iki turunun eğitilmiş karşılığı) | Tam görüntü (= Π_ROI'nin teşhis modeli) ya da FoveaHE temsili | `foveahe/he_models.py:37-45` | `python -m experiments.fovea_models` |
+| Model D2 | Tablo V, VIII, IX | Şifreli teşhis | Model D + yığın normalizasyonu + kare aktivasyon | Aynı | `foveahe/he_models.py:37-45` | Aynı |
 | Model C | Tablo V | Şifreli teşhis | Katman başına tek evrişim (adım = çekirdek), yığın normalizasyonu, kare, tam bağlantılı | FoveaHE katmanları | `foveahe/he_cnn.py:38-60` | Aynı |
 | Şifreli özet + D/D2 | Tablo VIII | Rakip yaklaşım | İstemcide dondurulmuş ResNet-18 (512 değer), sunucuda şifreli D/D2 | 224×224 görüntünün özeti | `experiments/fovea_baselines.py:50-72` | `python -m experiments.fovea_baselines` |
 | U-Net | Metin (gerçekçilik testi) | Yardımcı | Küçük U-Net | Göğüs röntgeni → akciğer maskesi | `common/segmentation.py:17-41` | `python -m experiments.lung_segmenter` |
@@ -102,6 +105,11 @@ kümesi eğitimde ve model seçiminde kullanılmaz. Kayıtlar yerelde ve wandb'd
 her epoch'ta eğitim/doğrulama kaybı, doğruluk, makro F1 ve AUC. Tablo: `results/tables/izleme_ozet.md`; ham eğriler:
 `results/tables/izleme/`; şekiller: `results/figures/izleme_saldirgan.png`, `izleme_foveahe.png`.
 
+Saldırganın izleme koşusu makaledeki saldırgan eğitiminden ayrıdır. Ayrı bir doğrulama kümesi gerektiği için beyin MR'da
+kat 2 doğrulama, kat 3–5 eğitimdir (1 843 görüntü). Makaledeki saldırgan doğrulama kümesi kullanmaz; test katı 1 iken
+kalan 4 katın 2 522 görüntüsüyle eğitilir. Şifreli modellerin izleme koşusu ise makaledeki ilk bölmenin aynısıdır (makaledeki eğitim de
+doğrulama kümesiyle erken durdurur).
+
 | Veri | Model | Seçilen ayar | Epoch (durduğu) | Kullanılan ağırlık | Eğitim doğruluğu | Doğrulama doğruluğu | Fark | Doğrulama AUC |
 |---|---|---|---|---|---|---|---|---|
 | Beyin MR | Bağlam saldırganı | sabit (makale) | 12 | son epoch | 1.000 | 0.906 | 0.094 | 0.981 |
@@ -117,13 +125,17 @@ Yorum:
   saldırganında doğrulama AUC 0.961'den 0.981'e, COVID-QU-Ex saldırganında 0.980'den 0.987'ye çıkıyor. Model C'de
   doğrulama doğruluğu 0.67'den 0.84'e çıkıyor.
 - **Beyin MR saldırganı eğitim kümesini ezberliyor**, ama bu doğrulama başarımını düşürmüyor. Eğitim doğruluğu
-  10. epoch'tan itibaren %100'dür. Doğrulama kaybı ise en düşük değerinde kalır: 4. epoch'ta 0.2975, son epoch'ta 0.2996.
-  Doğrulama doğruluğu son 5 epoch'ta 0.906–0.909 arasında sabittir. Makaledeki sabit 12 epoch ayarı bu yüzden
-  doğrulama başarımını bozmuyor.
+  10. epoch'tan itibaren %100'dür. Doğrulama kaybı, öğrenme oranının hâlâ yüksek olduğu 6–7. epoch'larda geçici olarak
+  yükselir (0.43 ve 0.54; öğrenme oranı bu sırada tepe değerinin yaklaşık %78'inden %48'ine iner), sonra yeniden düşer.
+  Eğitim doğruluğunun %100 olduğu 10–12. epoch'larda doğrulama kaybı 0.305–0.300'de sabittir; son epoch'taki değer
+  (0.2996) en düşük değere (0.2975, 4. epoch) çok yakındır. Doğrulama doğruluğu son 5 epoch'ta 0.906–0.909 arasında
+  sabittir. Makale sonuçlarında kullanılan sabit 12 epoch ayarı bu yüzden doğrulama başarımını bozmuyor.
 - **COVID-QU-Ex saldırganında** eğitim ve doğrulama arasında 2 puanlık fark var. Doğrulama kaybı en düşük değerine
   4. epoch'ta iner (0.173); 5. epoch'ta hafifçe 0.183'e çıkar.
 - **Şifreli modeller** erken durdurmayla eğitilir. Doğrulama kaybı 10 epoch iyileşmeyince eğitim durur ve doğrulama
-  kaybının en iyi olduğu epoch'un ağırlıkları kullanılır. Sonraki epoch'lardaki ezberleme kullanılan modele yansımaz.
+  kaybının en iyi olduğu epoch'un ağırlıkları kullanılır. En iyi epoch'tan sonra doğrulama kaybı yükselir (ör.
+  COVID-QU-Ex Model D2: 15. epoch'ta 0.473, 21. epoch'ta 0.520); bu sonraki epoch'lardaki ezberleme kullanılan modele
+  yansımaz.
 - **Beyin MR'da eğitim–doğrulama farkı büyüktür.** FoveaHE modellerinde fark 0.11–0.15, COVID-QU-Ex'te 0.05'tir.
   Beyin MR'da 1 843 eğitim görüntüsü vardır, COVID-QU-Ex'te 21 715. En büyük fark tam görüntü modelindedir (U512):
   262 144 girdiye karşılık 1 843 eğitim görüntüsü. FoveaHE temsilinde (1 283 değer) fark daha küçüktür ve doğrulama
@@ -169,8 +181,10 @@ Kaggle görüntülerinde akciğerler gizliyken normal ile pnömoniyi AUC 0.998 i
 görüntüsünde değerlendirildiğinde temsiller arasındaki sıralama korunur. Makalede belirtildiği gibi iki küme aynı çocuk
 hasta kaynağını paylaştığından bu test tamamen bağımsız bir hastane testi değildir.
 
-**4. Eğitim eğrileri** (yukarıdaki bölüm). Doğrulama kaybı eğitim boyunca yükselmez; şifreli modeller erken
-durdurmayla seçilen epoch'u kullanır.
+**4. Eğitim eğrileri** (yukarıdaki bölüm). Beyin MR saldırganında doğrulama kaybı yalnız öğrenme oranının yüksek
+olduğu ara epoch'larda geçici olarak yükselir; eğitim doğruluğu %100'e ulaştıktan sonra en düşük düzeyine yakın kalır.
+COVID-QU-Ex saldırganında son epoch'ta hafif bir artış vardır (0.173'ten 0.183'e). Şifreli modellerde doğrulama kaybı
+en iyi epoch'tan sonra yükselir; erken durdurma o epoch'un ağırlıklarını kullanır.
 
 Makalenin kendi sınırlılığı olarak: COVID-QU-Ex birden çok kaynaktan derlendiği için çekim koşullarına bağlı karıştırıcı
 etkenler mutlak AUC değerlerini yükseltmiş olabilir. Bu, ezberle değil veri kümesinin yapısıyla ilgilidir.
@@ -178,6 +192,8 @@ etkenler mutlak AUC değerlerini yükseltmiş olabilir. Bu, ezberle değil veri 
 ## Başarı ölçüleri
 
 - AUC, doğruluk, dengeli doğruluk, kesinlik, duyarlılık, F1 ve karışıklık matrisleri:
-  `results/tables/metrikler_ozet.md`, `metrikler_sinif.md`, `results/figures/karisiklik_*.png`.
-- Makaledeki sayılarla birebir karşılaştırma: `results/tables/makale_eslesme.md`.
+  `results/tables/metrikler_ozet.md`, `metrikler_sinif.md`, `results/figures/karisiklik_*.png`. Ana modellerin doğruluk
+  ve makro kesinlik, duyarlılık ve F1 değerleri makalede Tablo IX'dadır.
+- Makaledeki sayılarla birebir karşılaştırma (Tablo II, III, V ve IX'daki sınıflandırma ölçüleri, Tablo VIII'in
+  teşhis AUC değerleri ve metindeki değerler; 141 değer): `results/tables/makale_eslesme.md`.
 - Görüntü başına gerçek etiket ve tahminler: `results/tahminler/`.

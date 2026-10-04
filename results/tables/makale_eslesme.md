@@ -99,6 +99,36 @@
 | Tablo VIII, FoveaHE F64_G32, COVID-QU-Ex, teşhis AUC | 0.952 | 0.95188 | 0.952 | evet |
 | Tablo VIII, Şifreli özet, Beyin MR, teşhis AUC | 0.955 | 0.95507 | 0.955 | evet |
 | Tablo VIII, Şifreli özet, COVID-QU-Ex, teşhis AUC | 0.982 | 0.98151 | 0.982 | evet |
+| Tablo IX, Beyin MR, Saldırgan (bağlam), AUC | 0.976 | 0.97592 | 0.976 | evet |
+| Tablo IX, Beyin MR, Saldırgan (bağlam), doğruluk | 0.913 | 0.91332 | 0.913 | evet |
+| Tablo IX, Beyin MR, Saldırgan (bağlam), makro kesinlik | 0.902 | 0.90226 | 0.902 | evet |
+| Tablo IX, Beyin MR, Saldırgan (bağlam), makro duyarlılık | 0.901 | 0.90146 | 0.901 | evet |
+| Tablo IX, Beyin MR, Saldırgan (bağlam), makro F1 | 0.902 | 0.90155 | 0.902 | evet |
+| Tablo IX, Beyin MR, Tam görüntü, D, AUC | 0.881 | 0.88108 | 0.881 | evet |
+| Tablo IX, Beyin MR, Tam görüntü, D, doğruluk | 0.759 | 0.75888 | 0.759 | evet |
+| Tablo IX, Beyin MR, Tam görüntü, D, makro kesinlik | 0.730 | 0.72984 | 0.730 | evet |
+| Tablo IX, Beyin MR, Tam görüntü, D, makro duyarlılık | 0.723 | 0.72306 | 0.723 | evet |
+| Tablo IX, Beyin MR, Tam görüntü, D, makro F1 | 0.722 | 0.72226 | 0.722 | evet |
+| Tablo IX, Beyin MR, FoveaHE, D, AUC | 0.948 | 0.94794 | 0.948 | evet |
+| Tablo IX, Beyin MR, FoveaHE, D, doğruluk | 0.837 | 0.83721 | 0.837 | evet |
+| Tablo IX, Beyin MR, FoveaHE, D, makro kesinlik | 0.817 | 0.81652 | 0.817 | evet |
+| Tablo IX, Beyin MR, FoveaHE, D, makro duyarlılık | 0.819 | 0.81883 | 0.819 | evet |
+| Tablo IX, Beyin MR, FoveaHE, D, makro F1 | 0.817 | 0.81713 | 0.817 | evet |
+| Tablo IX, COVID-QU-Ex, Saldırgan (bağlam), AUC | 0.993 | 0.99320 | 0.993 | evet |
+| Tablo IX, COVID-QU-Ex, Saldırgan (bağlam), doğruluk | 0.953 | 0.95298 | 0.953 | evet |
+| Tablo IX, COVID-QU-Ex, Saldırgan (bağlam), makro kesinlik | 0.952 | 0.95219 | 0.952 | evet |
+| Tablo IX, COVID-QU-Ex, Saldırgan (bağlam), makro duyarlılık | 0.952 | 0.95241 | 0.952 | evet |
+| Tablo IX, COVID-QU-Ex, Saldırgan (bağlam), makro F1 | 0.952 | 0.95210 | 0.952 | evet |
+| Tablo IX, COVID-QU-Ex, Tam görüntü, D2, AUC | 0.946 | 0.94605 | 0.946 | evet |
+| Tablo IX, COVID-QU-Ex, Tam görüntü, D2, doğruluk | 0.840 | 0.83969 | 0.840 | evet |
+| Tablo IX, COVID-QU-Ex, Tam görüntü, D2, makro kesinlik | 0.839 | 0.83926 | 0.839 | evet |
+| Tablo IX, COVID-QU-Ex, Tam görüntü, D2, makro duyarlılık | 0.839 | 0.83925 | 0.839 | evet |
+| Tablo IX, COVID-QU-Ex, Tam görüntü, D2, makro F1 | 0.839 | 0.83910 | 0.839 | evet |
+| Tablo IX, COVID-QU-Ex, FoveaHE, D2, AUC | 0.954 | 0.95425 | 0.954 | evet |
+| Tablo IX, COVID-QU-Ex, FoveaHE, D2, doğruluk | 0.843 | 0.84343 | 0.843 | evet |
+| Tablo IX, COVID-QU-Ex, FoveaHE, D2, makro kesinlik | 0.843 | 0.84348 | 0.843 | evet |
+| Tablo IX, COVID-QU-Ex, FoveaHE, D2, makro duyarlılık | 0.844 | 0.84406 | 0.844 | evet |
+| Tablo IX, COVID-QU-Ex, FoveaHE, D2, makro F1 | 0.843 | 0.84340 | 0.843 | evet |
 | Metin, bozuk bağlam σ = 0.4, Beyin MR, saldırgan AUC | 0.967 | 0.96699 | 0.967 | evet |
 | Metin, bozuk bağlam σ = 0.4, COVID-QU-Ex, saldırgan AUC | 0.983 | 0.98336 | 0.983 | evet |
 | Metin, ResNet-18 bilgi düzeyi, Beyin MR, tam | 0.9841 | 0.984086 | 0.9841 | evet |

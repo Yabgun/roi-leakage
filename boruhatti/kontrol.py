@@ -13,7 +13,8 @@ Denetlenenler (hangisinin çıktısı varsa):
    ekran kartında kayan nokta farkı erken durdurmayı kaydırabilir, o zaman fark en çok bir tohum değişikliği kadardır.
 5. Ezber denetimi (`boruhatti.ezber_denetimi`): gerçek etiketlerle eğitilen modelin test AUC'si, etiketleri
    karıştırılarak eğitilen bütün koşuların test AUC'sinden yüksek olmalı (sonuç ezberle açıklanamaz).
-6. Kayıtlı tahminlerden makale tabloları (`python -m analysis.metrikler`): makaledeki 111 değerin hepsi.
+6. Kayıtlı tahminlerden makale tabloları (`python -m analysis.metrikler`): Tablo II, III, V ve IX'daki sınıflandırma
+   ölçüleri, Tablo VIII'in teşhis AUC değerleri ve metindeki sınıflandırma değerleri (141 değer).
 
 Bir sonuç dosyası bu koşuda yazılmadıysa (ör. git'ten gelen başvuru sonucu) o denetim ATLANDI sayılır, geçmiş kabul
 edilmez. `calistir.py` bunun için koşunun başlangıç anını `--baslangic` ile verir.
@@ -95,9 +96,9 @@ def main():
                  f"gerçek etiketle test AUC {r.gercek_etiketle_test_auc:.4f}; karıştırılmış etiketle {r.karistirma_sayisi} "
                  f"koşu: ort. {r.karisik_test_auc_ort:.4f}, en yüksek {r.karisik_test_auc_en_yuksek:.4f}")
     f = config.TABLES / "makale_eslesme.csv"
-    if taze(f, "Kayıtlı tahminlerden makale tabloları (Tablo II, III, V, VIII ve metin)"):
+    if taze(f, "Kayıtlı tahminlerden makale tabloları (Tablo II, III, V, VIII, IX ve metin)"):
         df = pd.read_csv(f)
-        ekle("Kayıtlı tahminlerden makale tabloları (Tablo II, III, V, VIII ve metin)", bool(df.tuttu.all()),
+        ekle("Kayıtlı tahminlerden makale tabloları (Tablo II, III, V, VIII, IX ve metin)", bool(df.tuttu.all()),
              f"{int(df.tuttu.sum())}/{len(df)} değer")
     df = pd.DataFrame(satirlar, columns=["denetim", "sonuc", "ayrinti"])
     with pd.option_context("display.width", 250, "display.max_colwidth", 140):

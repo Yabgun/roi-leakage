@@ -11,6 +11,8 @@ Kapsam, makalenin sınıflandırma sonucu veren tabloları ve metnidir:
 - Tablo III: Saldırı B, bağlam saldırganı (ResNet-18). Beyin MR'da görünür piksel normalizasyonu kullanılır.
 - Tablo V: şifreli çalışabilen modeller (D, D2, C).
 - Tablo VIII: teşhis modelleri, şifreli özet ve bozuk bağlam saldırganı.
+- Tablo IX: ana modellerin (bağlam saldırganı, tam görüntüyle Model D/D2, FoveaHE F32_G16 + D/D2) AUC, doğruluk ve
+  makro kesinlik, duyarlılık ve F1 değerleri.
 - Bulgular metni: ResNet-18 ile bilgi düzeyi ve kesit normalizasyonu karşılaştırması.
 
 Tablo IV (savunma), VI (maliyet) ve VII (sızıntı denetimi) sınıflandırma başarısı ölçmez. Bunlar eşik, maliyet ve
@@ -278,6 +280,17 @@ def makale_eslesme(sonuc, ds_map) -> pd.DataFrame:
             if y.startswith("Bozuk bağlam"):
                 ekle(f"Tablo VIII, {y}, {VERI_AD[veri]}, saldırgan AUC", r[kisa]["saldirgan"],
                      ort(f"Bozuk_{kisa}")[0], 2)
+    # Tablo IX: ana modellerin sınıflandırma ölçüleri
+    t9 = {("Beyin", "Saldırgan (bağlam)"): "B_beyin_baglam", ("Beyin", "Tam görüntü, D"): "M_brain_D_U512",
+          ("Beyin", "FoveaHE, D"): "M_brain_D_F32_G16", ("COVID", "Saldırgan (bağlam)"): "B_covidqu_baglam",
+          ("COVID", "Tam görüntü, D2"): "M_covidqu_D2_U256", ("COVID", "FoveaHE, D2"): "M_covidqu_D2_F32_G16"}
+    for r in bek["tablo_IX_siniflandirma"]["satirlar"]:
+        a = t9[(r["veri"], r["model"])]
+        veri = {"Beyin": "Beyin MR", "COVID": "COVID-QU-Ex"}[r["veri"]]
+        for kol, m, ad in (("auc", "auc", "AUC"), ("dogruluk", "dogruluk", "doğruluk"),
+                           ("kesinlik", "kesinlik_makro", "makro kesinlik"),
+                           ("duyarlilik", "duyarlilik_makro", "makro duyarlılık"), ("f1", "f1_makro", "makro F1")):
+            ekle(f"Tablo IX, {veri}, {r['model']}, {ad}", r[kol], ort(a, m)[0], 3)
     # Metin değerleri
     mt = bek["metin_bozuk_baglam"]
     ekle("Metin, bozuk bağlam σ = 0.4, Beyin MR, saldırgan AUC", mt["beyin"], ort("Bozuk_beyin")[0], 3)

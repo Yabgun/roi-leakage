@@ -98,6 +98,36 @@ kaynak,makale,hesaplanan,ondalik,tuttu
 "Tablo VIII, FoveaHE F64_G32, COVID-QU-Ex, teşhis AUC",0.952,0.951877,3,True
 "Tablo VIII, Şifreli özet, Beyin MR, teşhis AUC",0.955,0.955073,3,True
 "Tablo VIII, Şifreli özet, COVID-QU-Ex, teşhis AUC",0.982,0.981513,3,True
+"Tablo IX, Beyin MR, Saldırgan (bağlam), AUC",0.976,0.975916,3,True
+"Tablo IX, Beyin MR, Saldırgan (bağlam), doğruluk",0.913,0.913316,3,True
+"Tablo IX, Beyin MR, Saldırgan (bağlam), makro kesinlik",0.902,0.902256,3,True
+"Tablo IX, Beyin MR, Saldırgan (bağlam), makro duyarlılık",0.901,0.901455,3,True
+"Tablo IX, Beyin MR, Saldırgan (bağlam), makro F1",0.902,0.901551,3,True
+"Tablo IX, Beyin MR, Tam görüntü, D, AUC",0.881,0.881079,3,True
+"Tablo IX, Beyin MR, Tam görüntü, D, doğruluk",0.759,0.758877,3,True
+"Tablo IX, Beyin MR, Tam görüntü, D, makro kesinlik",0.73,0.729841,3,True
+"Tablo IX, Beyin MR, Tam görüntü, D, makro duyarlılık",0.723,0.723059,3,True
+"Tablo IX, Beyin MR, Tam görüntü, D, makro F1",0.722,0.722257,3,True
+"Tablo IX, Beyin MR, FoveaHE, D, AUC",0.948,0.947944,3,True
+"Tablo IX, Beyin MR, FoveaHE, D, doğruluk",0.837,0.837206,3,True
+"Tablo IX, Beyin MR, FoveaHE, D, makro kesinlik",0.817,0.816516,3,True
+"Tablo IX, Beyin MR, FoveaHE, D, makro duyarlılık",0.819,0.818834,3,True
+"Tablo IX, Beyin MR, FoveaHE, D, makro F1",0.817,0.817128,3,True
+"Tablo IX, COVID-QU-Ex, Saldırgan (bağlam), AUC",0.993,0.993204,3,True
+"Tablo IX, COVID-QU-Ex, Saldırgan (bağlam), doğruluk",0.953,0.952976,3,True
+"Tablo IX, COVID-QU-Ex, Saldırgan (bağlam), makro kesinlik",0.952,0.952188,3,True
+"Tablo IX, COVID-QU-Ex, Saldırgan (bağlam), makro duyarlılık",0.952,0.952409,3,True
+"Tablo IX, COVID-QU-Ex, Saldırgan (bağlam), makro F1",0.952,0.9521,3,True
+"Tablo IX, COVID-QU-Ex, Tam görüntü, D2, AUC",0.946,0.946045,3,True
+"Tablo IX, COVID-QU-Ex, Tam görüntü, D2, doğruluk",0.84,0.839688,3,True
+"Tablo IX, COVID-QU-Ex, Tam görüntü, D2, makro kesinlik",0.839,0.839259,3,True
+"Tablo IX, COVID-QU-Ex, Tam görüntü, D2, makro duyarlılık",0.839,0.839248,3,True
+"Tablo IX, COVID-QU-Ex, Tam görüntü, D2, makro F1",0.839,0.839101,3,True
+"Tablo IX, COVID-QU-Ex, FoveaHE, D2, AUC",0.954,0.954251,3,True
+"Tablo IX, COVID-QU-Ex, FoveaHE, D2, doğruluk",0.843,0.84343,3,True
+"Tablo IX, COVID-QU-Ex, FoveaHE, D2, makro kesinlik",0.843,0.843481,3,True
+"Tablo IX, COVID-QU-Ex, FoveaHE, D2, makro duyarlılık",0.844,0.844058,3,True
+"Tablo IX, COVID-QU-Ex, FoveaHE, D2, makro F1",0.843,0.843399,3,True
 "Metin, bozuk bağlam σ = 0.4, Beyin MR, saldırgan AUC",0.967,0.966994,3,True
 "Metin, bozuk bağlam σ = 0.4, COVID-QU-Ex, saldırgan AUC",0.983,0.983362,3,True
 "Metin, ResNet-18 bilgi düzeyi, Beyin MR, tam",0.9841,0.984086,4,True

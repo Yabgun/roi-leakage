@@ -31,7 +31,7 @@ py -3.13 -m venv .venv
 
 | Kademe | Komut | Ne yapar | Süre (RTX 2070) |
 |---|---|---|---|
-| 0 | `calistir.py --kademe 0` | Veriyi indirip doğrular, makaledeki modelleri indirir, ön işler, modelleri test eder, 27 görüntüde gerçek CKKS şifreli çıkarım yapar, makale tablolarını kayıtlı tahminlerden yeniden hesaplar, sonuçları denetler. Eğitim yoktur. | ~50 dk: veri indirme 20, model indirme 8, ön işleme 13, kopya taraması 4, değerlendirme 3 (indirme süresi bağlantıya bağlıdır) |
+| 0 | `calistir.py --kademe 0` | Veriyi indirip doğrular, makaledeki modelleri indirir, ön işler, modelleri test eder, 3 modelle 27 gerçek CKKS şifreli çıkarım yapar (18 farklı görüntü), makale tablolarını kayıtlı tahminlerden yeniden hesaplar, sonuçları denetler. Eğitim yoktur. | ~50 dk: veri indirme 20, model indirme 8, ön işleme 13, kopya taraması 4, değerlendirme 3 (indirme süresi bağlantıya bağlıdır) |
 | 1 | `calistir.py --kademe 1` | Kademe 0 + makalenin ana modellerini bu bilgisayarda yeniden eğitir (12 eğitim, eğitim eğrileriyle) + ezber denetimi (etiket karıştırma). Yeni modeller makaledeki modellerle karşılaştırılır. | Kademe 0 + ~45 dk: 12 eğitim ~22 dk (wandb açıkken ~27), ezber denetimi ~19 dk |
 | 2 | aşağıdaki komut listesi | Makaledeki bütün deneyler | ~1–2 gün |
 
@@ -52,7 +52,7 @@ Kademe 0'da yeniden eğitim denetimleri); git'ten gelen başvuru sonuçları den
 | Makaledeki şifreli modeller (Tablo V, VIII) | 32 değerin 32'si makaledekiyle aynı | 0, 1 |
 | Gerçek CKKS şifreli çıkarım (3 model × 9 görüntü) | Logit farkı ≤ 1e-3, tahmin uyumu %100 | 0, 1 |
 | Saldırgan modelleri (4) | AUC, makaledeki 5 tohum ortalamasından en çok ±0.005 farklı | 0, 1 |
-| Kayıtlı tahminlerden makale tabloları | 111 değerin 111'i | 0, 1 |
+| Kayıtlı tahminlerden makale tabloları (Tablo II, III, V ve IX'daki sınıflandırma ölçüleri, Tablo VIII'in teşhis AUC değerleri, metindeki değerler) | 141 değerin 141'i | 0, 1 |
 | FoveaHE yeniden eğitimi (6) | AUC, makaledeki 5 tohumun aynı bölmedeki aralığında (±0.005) | 1 |
 | Ezber denetimi (4) | Gerçek etiketli sonuç, etiketleri karıştırılmış bütün koşuların üstünde | 1 |
 
@@ -64,7 +64,8 @@ değiştiğini gösterir.
 
 Makalenin iki ana modeli: sızıntıyı gösteren **bağlam saldırganı** (ImageNet ön eğitimli ResNet-18, Π_ROI görüşü;
 Tablo III) ve önerilen yöntemin modeli **FoveaHE F32_G16 + Model D** (beyin MR) ve **+ Model D2** (göğüs röntgeni)
-(Tablo V, VIII). Bütün modeller, girdileri, etiketleri ve ağırlık dosyaları: `docs/MODELLER.md`, `docs/ETIKETLER.md`.
+(Tablo V, VIII). Bu modellerin doğruluk ile makro kesinlik, duyarlılık ve F1 değerleri makalenin Tablo IX'undadır.
+Bütün modeller, girdileri, etiketleri ve ağırlık dosyaları: `docs/MODELLER.md`, `docs/ETIKETLER.md`.
 
 Ağırlıklar Hugging Face'tedir: https://huggingface.co/Btutumlu/roi-leakage. `python -m boruhatti.modelleri_indir`
 bunları doğru klasörlere indirir (Kademe 0 ve 1 bunu kendisi yapar).
@@ -102,28 +103,64 @@ FoveaHE. `--sifreli` FoveaHE tahminini gerçek CKKS şifreli çalıştırır. Gi
 
 ## Kademe 2: makaledeki bütün deneyler
 
-Kademe 0'dan sonra (veri indirilmiş ve ön işlenmiş olarak) aşağıdaki komutlar sırayla çalıştırılır:
-`.venv\Scripts\python -m experiments.<ad>`.
+Kademe 0'dan sonra (veri indirilmiş ve ön işlenmiş olarak) aşağıdaki komutlar bu sırayla çalıştırılır. Komutlar
+makaledeki sayıları üreten ayarları taşır: tohum sayısı, beyin MR'da görünür piksel normalizasyonu (`--norm gorunur`)
+ve maliyet ölçümünün örnek sayısı. Betiklerin varsayılanları bazı yerlerde farklıdır (ör. tek tohum), bu yüzden
+argümanlar yazıldığı gibi verilmelidir. Liste, sonuçları üreten kuyruklardan derlenmiştir (`experiments/run_queue.ps1`,
+`run_seeds_resume.ps1`, `run_fovea_*.ps1`; tohum tekrarları ve inceleme sonrası deneyler `experiments/queue_progress.py`
+içinde). Kademe 2 uçtan uca yeniden sınanmamıştır.
 
-| Deney | Komut | Makalede | Çıktı |
-|---|---|---|---|
-| Π_ROI'nin yeniden üretimi ve maliyeti | `experiments.piroi_benchmark` | Bulgular, maliyet | `results/tables/piroi_*.csv` |
-| Saldırı A: meta veri | `experiments.attack_metadata` | Tablo II | `results/tables/saldiri_A_*.csv` |
-| Kesit yönü karıştırıcı mı (Saldırı A) | `experiments.brain_orientation` | Saldırı A metni | `results/tables/saldiri_A_beyin_yon_kontrolu_*.json` |
-| Saldırı B: bağlam saldırganı | `experiments.attack_context` | Tablo III | `results/tables/saldiri_B_baglam*.csv` |
-| Akciğer U-Net'i | `experiments.lung_segmenter` | Gerçekçilik testi | `results/tables/akciger_segmentasyon.json` |
-| Gerçekçilik testi | `experiments.attack_context_transfer` | Gerçekçilik testi | `results/tables/saldiri_B_transfer.csv` |
-| Kök neden (Grad-CAM, ön işleme) | `experiments.root_cause` | Kök neden | `results/tables/kok_neden_*.csv` |
-| Savunma | `experiments.defense_expansion` | Tablo IV | `results/tables/savunma*.csv` |
-| FoveaHE bilgi düzeyi | `experiments.fovea_info` | Çözüm | `results/tables/cozum_bilgi.csv` |
-| Şifreli modeller | `experiments.fovea_models` | Tablo V | `results/tables/cozum_modeller.csv` |
-| Şifreli çıkarım ve maliyet | `experiments.fovea_cost` | Tablo VI | `results/tables/cozum_maliyet.csv` |
-| Sızıntı denetimi | `experiments.fovea_leakage` | Tablo VII | `results/tables/cozum_sizinti.csv` |
-| Rakip: şifreli özet | `experiments.fovea_baselines` | Tablo VIII | `results/tables/cozum_rakipler.csv` |
-| Rakip: bozuk bağlam | `experiments.attack_noisy_context` | Tablo VIII | `results/tables/saldiri_B_gurultu.csv` |
-| Dış veride genelleme | `experiments.fovea_transfer` | Çözüm | `results/tables/cozum_genelleme.csv` |
-| Bütçe taraması | `experiments.fovea_budget` | Çözüm | `results/tables/cozum_butce.csv` |
-| Birleşik özet | `experiments.fovea_pareto` | Çözüm | `results/tables/cozum_ozet.csv` |
+`--norm gorunur` yalnız beyin MR'da kullanılır ve çıktılarını `_gnorm` ekli ayrı dosyalara yazar. Makalenin beyin MR
+tablolarında bu dosyalar, göğüs röntgeninde ve metindeki normalizasyon karşılaştırmasında varsayılan koşu kullanılır.
+
+```bat
+rem Π_ROI'nin yeniden üretimi ve maliyeti (Bulgular A; savunma ve maliyet tablolarındaki hız kazançları)
+.venv\Scripts\python -m experiments.piroi_benchmark
+rem Saldırı A (Tablo II) ve kesit yönü denetimi (Saldırı A metni)
+.venv\Scripts\python -m experiments.attack_metadata
+.venv\Scripts\python -m experiments.brain_orientation --heuristic
+rem Saldırı B: COVID-QU-Ex (Tablo III) ve beyin MR kesit normalizasyonu (Saldırı B metni)
+.venv\Scripts\python -m experiments.attack_context --views tam baglam baglam_genis40 --seeds 0 1 2 3 4
+.venv\Scripts\python -m experiments.attack_context --views yalniz_roi baglam_genis10 baglam_genis20 kutu
+rem Saldırı B: beyin MR görünür piksel normalizasyonu (Tablo III)
+.venv\Scripts\python -m experiments.brain_visible_norm
+.venv\Scripts\python -m experiments.attack_context --dataset brain --norm gorunur --views tam baglam baglam_genis40 --seeds 0 1 2 3 4
+.venv\Scripts\python -m experiments.attack_context --dataset brain --norm gorunur --views yalniz_roi baglam_genis10 baglam_genis20 kutu
+rem Gerçekçilik testi: akciğer U-Net'i ve kaynaklar arası saldırı
+.venv\Scripts\python -m experiments.lung_segmenter
+.venv\Scripts\python -m experiments.attack_context_transfer
+rem Sızıntının kaynağı: önişleme denemeleri, sonra Grad-CAM (Şekil 2 ve dikkat yüzdeleri)
+.venv\Scripts\python -m experiments.root_cause
+.venv\Scripts\python -m experiments.root_cause --dataset covidqu brain --norm gorunur --skip-ablation
+rem Savunmalar (Tablo IV, Şekil 3); --recost Π_ROI maliyeti ölçüldükten sonra hız kazançlarını yeniler
+.venv\Scripts\python -m experiments.defense_expansion
+.venv\Scripts\python -m experiments.defense_expansion --dataset brain --norm gorunur
+.venv\Scripts\python -m experiments.defense_expansion --recost
+rem FoveaHE bilgi düzeyi (Bulgular metni)
+.venv\Scripts\python -m experiments.fovea_info --dataset brain --configs tam tam_pencere F32_G16 F64_G32 U32 U32_pencere U64 U64_pencere U90 U90_pencere --seeds 0 1 2 3 4
+.venv\Scripts\python -m experiments.fovea_info --dataset covidqu --configs tam F32_G16 F64_G32 U32 U64 --seeds 0 1 2 3 4
+.venv\Scripts\python -m experiments.fovea_info --plot-only
+rem Şifreli çalışabilen modeller (Tablo V ve IX)
+.venv\Scripts\python -m experiments.fovea_models --dataset brain --configs U512 F32_G16 F64_G32 U64 U64_pencere --seeds 0 1 2 3 4 --device cuda
+.venv\Scripts\python -m experiments.fovea_models --dataset covidqu --configs U256 F32_G16 F64_G32 U64 U64_pencere --seeds 0 1 2 3 4 --device cuda
+rem Şifreli çıkarımın doğruluğu ve maliyeti (Tablo VI) ve sızıntı denetimi (Tablo VII)
+.venv\Scripts\python -m experiments.fovea_cost --n-match 120 --reps 3
+.venv\Scripts\python -m experiments.fovea_leakage
+rem Rakip yaklaşımlar (Tablo VIII): şifreli özet (tohum 0 şifreli ölçümle, tohum 1-4 yalnız doğruluk) ve bozuk bağlam
+.venv\Scripts\python -m experiments.fovea_baselines
+.venv\Scripts\python -m experiments.fovea_baselines --seed 1 --skip-he
+.venv\Scripts\python -m experiments.fovea_baselines --seed 2 --skip-he
+.venv\Scripts\python -m experiments.fovea_baselines --seed 3 --skip-he
+.venv\Scripts\python -m experiments.fovea_baselines --seed 4 --skip-he
+.venv\Scripts\python -m experiments.attack_noisy_context
+.venv\Scripts\python -m experiments.attack_noisy_context --dataset brain --norm gorunur
+rem Dış veride genelleme, bütçe taraması (tek tohum) ve birleşik özet (Tablo VIII, Şekil 4)
+.venv\Scripts\python -m experiments.fovea_transfer
+.venv\Scripts\python -m experiments.fovea_budget
+.venv\Scripts\python -m experiments.fovea_pareto
+```
+
+Çıktılar `results/tables/` ve `results/figures/` altına yazılır; bu çalışmanın kendi çıktıları depoda aynı yerdedir.
 
 Not: RTX 2070 ve cuDNN 9.10'da `channels_last` bellek düzeni saldırgan eğitimini ~7.5 kat yavaşlattığı için
 kullanılmaz (adım başına 529 ms yerine 71 ms).

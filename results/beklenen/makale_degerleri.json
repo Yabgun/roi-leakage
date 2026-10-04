@@ -1,8 +1,8 @@
 {
  "kaynak": "belgeler/IEEE/makale/makale.tex",
- "sha256": "82dc78bd43159ece98df63cd0a8af572b8896da496cecefabfd39eb761f460a3",
+ "sha256": "2a122555636bcc27717f8ab082a1f287c4571dac5633d19975c3ec0d074b468e",
  "tablo_II_saldiri_A": {
-  "tex_satiri": 217,
+  "tex_satiri": 220,
   "satirlar": [
    {
     "veri_hedef": "Beyin MR, tümör tipi",
@@ -114,7 +114,7 @@
   ]
  },
  "tablo_III_saldiri_B": {
-  "tex_satiri": 248,
+  "tex_satiri": 251,
   "satirlar": [
    {
     "gorus": "Tam (şifresiz)",
@@ -217,7 +217,7 @@
   ]
  },
  "tablo_V_modeller": {
-  "tex_satiri": 325,
+  "tex_satiri": 328,
   "satirlar": [
    {
     "veri": "Beyin",
@@ -282,7 +282,7 @@
   ]
  },
  "tablo_VIII_karsilastirma": {
-  "tex_satiri": 405,
+  "tex_satiri": 407,
   "satirlar": [
    {
     "yontem": "Tam şifreleme",
@@ -405,8 +405,73 @@
    }
   ]
  },
+ "tablo_IX_siniflandirma": {
+  "tex_satiri": 438,
+  "satirlar": [
+   {
+    "veri": "Beyin",
+    "model": "Saldırgan (bağlam)",
+    "auc": 0.976,
+    "dogruluk": 0.913,
+    "kesinlik": 0.902,
+    "duyarlilik": 0.901,
+    "f1": 0.902,
+    "ondalik": 3
+   },
+   {
+    "veri": "Beyin",
+    "model": "Tam görüntü, D",
+    "auc": 0.881,
+    "dogruluk": 0.759,
+    "kesinlik": 0.73,
+    "duyarlilik": 0.723,
+    "f1": 0.722,
+    "ondalik": 3
+   },
+   {
+    "veri": "Beyin",
+    "model": "FoveaHE, D",
+    "auc": 0.948,
+    "dogruluk": 0.837,
+    "kesinlik": 0.817,
+    "duyarlilik": 0.819,
+    "f1": 0.817,
+    "ondalik": 3
+   },
+   {
+    "veri": "COVID",
+    "model": "Saldırgan (bağlam)",
+    "auc": 0.993,
+    "dogruluk": 0.953,
+    "kesinlik": 0.952,
+    "duyarlilik": 0.952,
+    "f1": 0.952,
+    "ondalik": 3
+   },
+   {
+    "veri": "COVID",
+    "model": "Tam görüntü, D2",
+    "auc": 0.946,
+    "dogruluk": 0.84,
+    "kesinlik": 0.839,
+    "duyarlilik": 0.839,
+    "f1": 0.839,
+    "ondalik": 3
+   },
+   {
+    "veri": "COVID",
+    "model": "FoveaHE, D2",
+    "auc": 0.954,
+    "dogruluk": 0.843,
+    "kesinlik": 0.843,
+    "duyarlilik": 0.844,
+    "f1": 0.843,
+    "ondalik": 3
+   }
+  ]
+ },
  "metin_adim1_resnet": {
-  "tex_satiri": 319,
+  "tex_satiri": 322,
   "beyin_tam": 0.9841,
   "beyin_F32_G16": 0.9919,
   "beyin_F64_G32": 0.9936,
@@ -415,25 +480,25 @@
   "ondalik": 4
  },
  "metin_saldiri_B_kesit": {
-  "tex_satiri": 244,
+  "tex_satiri": 247,
   "tam_baglam_en_buyuk_fark": 0.001,
   "yalniz_roi_kesit": 0.978
  },
  "metin_bozuk_baglam": {
-  "tex_satiri": 401,
+  "tex_satiri": 403,
   "beyin": 0.967,
   "covidqu": 0.983,
   "ondalik": 3
  },
  "metin_saldiri_A_beyin_sinif": {
-  "tex_satiri": 213,
+  "tex_satiri": 216,
   "hipofiz": 0.949,
   "gliom": 0.827,
   "meningiom": 0.714,
   "ondalik": 3
  },
  "metin_veri": {
-  "tex_satiri": 157,
+  "tex_satiri": 161,
   "covidqu_toplam": 33920,
   "covidqu_covid19": 11956,
   "covidqu_non_covid": 11263,
